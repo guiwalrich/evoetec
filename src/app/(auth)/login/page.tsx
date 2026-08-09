@@ -5,7 +5,6 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
 import Link from "next/link"
-import Image from "next/image"
 import { AlertCircle, Loader2, Eye, EyeOff } from "lucide-react"
 
 export default function LoginPage() {
@@ -134,7 +133,7 @@ export default function LoginPage() {
               height={96}
               onError={(e) => {
                 e.currentTarget.onerror = null
-                e.currentTarget.src = "/wrldevotec.png"
+                e.currentTarget.style.display = "none"
               }}
               className="object-contain w-24 h-24 hover:scale-105 transition-transform drop-shadow-md mx-auto block"
             />
