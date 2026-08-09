@@ -1,16 +1,15 @@
 // src/lib/auth.ts
-import { Role } from "@prisma/client"
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { authConfig } from "@/lib/auth.config"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { loginSchema } from "@/validators/auth"
+import { Role } from "@prisma/client"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
