@@ -127,7 +127,7 @@ export default function LoginPage() {
         <div className="text-center space-y-4">
           <div className="inline-flex items-center justify-center min-h-[96px] min-w-[96px]">
             <img
-              src="/assets/wrldevotec.png"
+              src="/assets/wrldevotec.webp"
               alt="Evo Etec Logo"
               width={96}
               height={96}

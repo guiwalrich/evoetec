@@ -42,11 +42,11 @@ export default function AssinaturaPage() {
         <div className="text-center space-y-4">
           <div className="inline-flex items-center justify-center">
             <img
-              src="/assets/wrldevotec.png"
+              src="/assets/wrldevotec.webp"
               alt="Evo Etec Logo"
               onError={(e) => {
                 e.currentTarget.onerror = null
-                e.currentTarget.src = "/logo-evoetec.png"
+                e.currentTarget.src = "/wrldevotec.webp"
               }}
               className="object-contain w-20 h-20 hover:scale-105 transition-transform drop-shadow-md mx-auto"
             />

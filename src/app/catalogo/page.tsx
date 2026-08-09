@@ -66,11 +66,11 @@ export default function CatalogoPage() {
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 flex items-center justify-center shrink-0">
               <img
-                src="/assets/wrldevotec.png"
+                src="/assets/wrldevotec.webp"
                 alt="Evo Etec Logo"
                 onError={(e) => {
                   e.currentTarget.onerror = null
-                  e.currentTarget.src = "/logo-evoetec.png"
+                  e.currentTarget.src = "/wrldevotec.webp"
                 }}
                 className="object-contain w-14 h-14 hover:scale-105 transition-transform drop-shadow-sm"
               />
