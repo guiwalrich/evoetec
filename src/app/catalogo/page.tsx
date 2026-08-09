@@ -68,6 +68,10 @@ export default function CatalogoPage() {
               <img
                 src="/assets/wrldevotec.png"
                 alt="Evo Etec Logo"
+                onError={(e) => {
+                  e.currentTarget.onerror = null
+                  e.currentTarget.src = "/logo-evoetec.png"
+                }}
                 className="object-contain w-14 h-14 hover:scale-105 transition-transform drop-shadow-sm"
               />
             </div>

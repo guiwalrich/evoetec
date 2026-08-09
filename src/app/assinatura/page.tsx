@@ -44,6 +44,10 @@ export default function AssinaturaPage() {
             <img
               src="/assets/wrldevotec.png"
               alt="Evo Etec Logo"
+              onError={(e) => {
+                e.currentTarget.onerror = null
+                e.currentTarget.src = "/logo-evoetec.png"
+              }}
               className="object-contain w-20 h-20 hover:scale-105 transition-transform drop-shadow-md mx-auto"
             />
           </div>

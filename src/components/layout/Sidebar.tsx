@@ -66,6 +66,10 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
               <img
                 src="/assets/wrldevotec.png"
                 alt="Evo Etec Logo"
+                onError={(e) => {
+                  e.currentTarget.onerror = null
+                  e.currentTarget.src = "/logo-evoetec.png"
+                }}
                 className="object-contain w-12 h-12 hover:scale-105 transition-transform drop-shadow-sm"
               />
             </div>
