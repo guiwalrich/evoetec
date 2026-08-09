@@ -126,15 +126,17 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white/70 border border-white/80 backdrop-blur-2xl rounded-[32px] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] relative z-10 space-y-8">
         {/* Logo + Título */}
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center">
+          <div className="inline-flex items-center justify-center min-h-[96px] min-w-[96px]">
             <img
               src="/assets/wrldevotec.png"
               alt="Evo Etec Logo"
+              width={96}
+              height={96}
               onError={(e) => {
                 e.currentTarget.onerror = null
-                e.currentTarget.src = "/logo-evoetec.png"
+                e.currentTarget.src = "/wrldevotec.png"
               }}
-              className="object-contain w-24 h-24 hover:scale-105 transition-transform drop-shadow-md mx-auto"
+              className="object-contain w-24 h-24 hover:scale-105 transition-transform drop-shadow-md mx-auto block"
             />
           </div>
 
