@@ -1,0 +1,396 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// ENUMS DE DOMÍNIO
+// ==========================================
+
+enum Role {
+  ADMIN
+  TECNICO
+  VENDEDOR
+}
+
+enum StatusOS {
+  ABERTA
+  EM_ANALISE
+  AGUARDANDO_PECA
+  EM_REPARO
+  AGUARDANDO_RETIRADA
+  CONCLUIDA
+  CANCELADA
+}
+
+enum StatusVenda {
+  PENDENTE
+  CONCLUIDA
+  CANCELADA
+}
+
+enum StatusProduto {
+  ATIVO
+  INATIVO
+}
+
+enum TipoConta {
+  RECEITA
+  DESPESA
+}
+
+enum CategoriaConta {
+  VENDA
+  SERVICO
+  ALUGUEL
+  SALARIO
+  FORNECEDOR
+  OUTROS
+}
+
+enum StatusConta {
+  PENDENTE
+  PAGO
+  ATRASADO
+  CANCELADO
+}
+
+enum FormaPagamento {
+  DINHEIRO
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  PIX
+  BOLETO
+}
+
+enum StatusAssinatura {
+  TRIAL
+  ATIVO
+  AGUARDANDO_PAGAMENTO
+  BLOQUEADO
+}
+
+// ==========================================
+// ENTIDADES DO SISTEMA
+// ==========================================
+
+model Empresa {
+  id               String           @id @default(cuid())
+  nomeFantasia     String
+  razaoSocial      String?
+  cnpj             String?          @unique
+  telefone         String?
+  endereco         String?
+  logoUrl          String?
+  // Controle de Assinatura / Trial
+  statusAssinatura StatusAssinatura @default(TRIAL)
+  trialIniciadoEm  DateTime         @default(now())
+  trialVenceEm     DateTime?
+  feedbackEnviado  Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  deletedAt        DateTime?
+
+  usuarios        Usuario[]
+  clientes        Cliente[]
+  fornecedores    Fornecedor[]
+  produtos        Produto[]
+  categorias      Categoria[]
+  ordensServico   OrdemServico[]
+  vendas          Venda[]
+  contasFinanceiras ContaFinanceira[]
+
+  @@index([cnpj])
+}
+
+model Usuario {
+  id                 String    @id @default(cuid())
+  nome               String
+  email              String    @unique
+  senha              String
+  role               Role      @default(VENDEDOR)
+  resetToken         String?
+  resetTokenExpires  DateTime?
+  empresaId          String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  empresa            Empresa        @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  ordensServicoTecnico OrdemServico[] @relation("TecnicoOS")
+  vendasVendedor     Venda[]        @relation("VendedorVenda")
+  historicosOS       OSHistorico[]
+
+  @@index([empresaId])
+  @@index([email])
+}
+
+model Cliente {
+  id        String    @id @default(cuid())
+  nome      String
+  cpfCnpj   String?
+  telefone  String?
+  email     String?
+  endereco  String?
+  empresaId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  empresa       Empresa        @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  ordensServico OrdemServico[]
+  vendas        Venda[]
+
+  @@index([empresaId])
+  @@index([nome])
+  @@index([cpfCnpj])
+}
+
+model Fornecedor {
+  id        String    @id @default(cuid())
+  nome      String
+  cpfCnpj   String?
+  telefone  String?
+  email     String?
+  endereco  String?
+  empresaId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  empresa          Empresa           @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  produtos         Produto[]
+  contasFinanceiras ContaFinanceira[]
+
+  @@index([empresaId])
+  @@index([nome])
+}
+
+model Categoria {
+  id        String    @id @default(cuid())
+  nome      String
+  empresaId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  empresa  Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  produtos Produto[]
+
+  @@index([empresaId])
+}
+
+model Produto {
+  id               String        @id @default(cuid())
+  nome             String
+  descricao        String?
+  codigoBarras     String?
+  precoCompra      Decimal       @db.Decimal(10, 2)
+  precoVenda       Decimal       @db.Decimal(10, 2)
+  quantidadeEstoque Int          @default(0)
+  estoqueMinimo    Int           @default(1)
+  status           StatusProduto @default(ATIVO)
+  imagemUrl        String?
+  categoriaId      String?
+  fornecedorId     String?
+  empresaId        String
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  deletedAt        DateTime?
+
+  empresa    Empresa     @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  categoria  Categoria?  @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  fornecedor Fornecedor? @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
+  osItens    OSItem[]
+  vendaItens VendaItem[]
+
+  @@index([empresaId])
+  @@index([nome])
+  @@index([codigoBarras])
+  @@index([status])
+}
+
+model OrdemServico {
+  id              String    @id @default(cuid())
+  numero          String
+  clienteId       String
+  tecnicoId       String?
+  empresaId       String
+  dispositivo     String
+  marca           String?
+  modelo          String?
+  imei            String?
+  defeitoRelatado String
+  diagnostico     String?
+  solucao         String?
+  valorServico    Decimal   @default(0.00) @db.Decimal(10, 2)
+  valorPecas      Decimal   @default(0.00) @db.Decimal(10, 2)
+  valorTotal      Decimal   @default(0.00) @db.Decimal(10, 2)
+  status          StatusOS  @default(ABERTA)
+  garantiaDias    Int       @default(90)
+  garantiaAte     DateTime?
+  dataEntrada     DateTime  @default(now())
+  dataConclusao   DateTime?
+  observacoes     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  empresa           Empresa           @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  cliente           Cliente           @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  tecnico           Usuario?          @relation("TecnicoOS", fields: [tecnicoId], references: [id], onDelete: SetNull)
+  itens             OSItem[]
+  historicos        OSHistorico[]
+  imagens           OSImagem[]
+  pagamentos        OSPagamento[]
+  contasFinanceiras ContaFinanceira[]
+
+  @@index([empresaId])
+  @@index([numero])
+  @@index([status])
+  @@index([clienteId])
+}
+
+model OSItem {
+  id             String   @id @default(cuid())
+  ordemServicoId String
+  produtoId      String
+  quantidade     Int      @default(1)
+  valorUnitario  Decimal  @db.Decimal(10, 2)
+  valorTotal     Decimal  @db.Decimal(10, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  produto      Produto      @relation(fields: [produtoId], references: [id], onDelete: Restrict)
+
+  @@index([ordemServicoId])
+}
+
+model OSPagamento {
+  id             String         @id @default(cuid())
+  ordemServicoId String
+  formaPagamento FormaPagamento
+  valor          Decimal        @db.Decimal(10, 2)
+  criadoEm       DateTime       @default(now())
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+
+  @@index([ordemServicoId])
+}
+
+model OSHistorico {
+  id             String    @id @default(cuid())
+  ordemServicoId String
+  usuarioId      String?
+  statusAnterior StatusOS?
+  statusNovo     StatusOS
+  observacao     String?
+  criadoEm       DateTime  @default(now())
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  usuario      Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([ordemServicoId])
+}
+
+model OSImagem {
+  id             String   @id @default(cuid())
+  ordemServicoId String
+  url            String
+  descricao      String?
+  criadoEm       DateTime @default(now())
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+
+  @@index([ordemServicoId])
+}
+
+model Venda {
+  id         String      @id @default(cuid())
+  numero     String
+  clienteId  String?
+  vendedorId String?
+  empresaId  String
+  subtotal   Decimal     @db.Decimal(10, 2)
+  desconto   Decimal     @default(0.00) @db.Decimal(10, 2)
+  valorTotal Decimal     @db.Decimal(10, 2)
+  status     StatusVenda @default(PENDENTE)
+  dataVenda  DateTime    @default(now())
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  deletedAt  DateTime?
+
+  empresa           Empresa           @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  cliente           Cliente?          @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  vendedor          Usuario?          @relation("VendedorVenda", fields: [vendedorId], references: [id], onDelete: SetNull)
+  itens             VendaItem[]
+  pagamentos        VendaPagamento[]
+  contasFinanceiras ContaFinanceira[]
+
+  @@index([empresaId])
+  @@index([numero])
+  @@index([status])
+}
+
+model VendaItem {
+  id            String   @id @default(cuid())
+  vendaId       String
+  produtoId     String
+  quantidade    Int      @default(1)
+  valorUnitario Decimal  @db.Decimal(10, 2)
+  desconto      Decimal  @default(0.00) @db.Decimal(10, 2)
+  valorTotal    Decimal  @db.Decimal(10, 2)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  venda   Venda   @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Restrict)
+
+  @@index([vendaId])
+}
+
+model VendaPagamento {
+  id             String         @id @default(cuid())
+  vendaId        String
+  formaPagamento FormaPagamento
+  valor          Decimal        @db.Decimal(10, 2)
+  criadoEm       DateTime       @default(now())
+
+  venda Venda @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+
+  @@index([vendaId])
+}
+
+model ContaFinanceira {
+  id             String         @id @default(cuid())
+  descricao      String
+  valor          Decimal        @db.Decimal(10, 2)
+  tipo           TipoConta
+  categoria      CategoriaConta
+  dataVencimento DateTime
+  dataPagamento  DateTime?
+  status         StatusConta    @default(PENDENTE)
+  vendaId        String?
+  ordemServicoId String?
+  fornecedorId   String?
+  empresaId      String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+
+  empresa      Empresa       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  venda        Venda?        @relation(fields: [vendaId], references: [id], onDelete: SetNull)
+  ordemServico OrdemServico? @relation(fields: [ordemServicoId], references: [id], onDelete: SetNull)
+  fornecedor   Fornecedor?   @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
+
+  @@index([empresaId])
+  @@index([status])
+  @@index([tipo])
+  @@index([dataVencimento])
+}

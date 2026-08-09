@@ -1,0 +1,294 @@
+// src/app/(dashboard)/ordens-servico/[id]/page.tsx
+"use client"
+
+import { useState, useEffect, use } from "react"
+import Link from "next/link"
+import {
+  ArrowLeft,
+  User,
+  Smartphone,
+  Wrench,
+  Clock,
+  Printer,
+  Loader2,
+  ShieldCheck,
+  MessageCircle
+} from "lucide-react"
+
+interface OSDetalhe {
+  id: string
+  numero: string
+  clienteId: string
+  dispositivo: string
+  marca: string | null
+  modelo: string | null
+  imei: string | null
+  defeitoRelatado: string
+  diagnostico: string | null
+  solucao: string | null
+  valorServico: number
+  valorPecas: number
+  valorTotal: number
+  status: string
+  garantiaDias: number
+  createdAt: string
+  cliente: {
+    id: string
+    nome: string
+    telefone: string | null
+    email: string | null
+  }
+  historicos: Array<{
+    id: string
+    statusNovo: string
+    observacao: string | null
+    criadoEm: string
+    usuario: { nome: string } | null
+  }>
+}
+
+export default function DetalheOrdemServicoPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = use(params)
+  const [os, setOs] = useState<OSDetalhe | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const [novoStatus, setNovoStatus] = useState<string>("")
+  const [atualizandoStatus, setAtualizandoStatus] = useState(false)
+
+  const carregarOS = async () => {
+    try {
+      const res = await fetch(`/api/ordens-servico/${id}`)
+      if (res.ok) {
+        const json = await res.json()
+        setOs(json)
+        setNovoStatus(json.status)
+      }
+    } catch (err) {
+      console.error("Erro ao carregar detalhes da OS:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    carregarOS()
+  }, [id])
+
+  const handleMudarStatus = async () => {
+    if (!os || !novoStatus || novoStatus === os.status) return
+    setAtualizandoStatus(true)
+    try {
+      const res = await fetch(`/api/ordens-servico/${os.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clienteId: os.clienteId || os.cliente?.id,
+          dispositivo: os.dispositivo,
+          defeitoRelatado: os.defeitoRelatado,
+          valorServico: Number(os.valorServico),
+          valorPecas: Number(os.valorPecas),
+          status: novoStatus,
+          garantiaDias: os.garantiaDias,
+        }),
+      })
+      if (res.ok) {
+        await carregarOS()
+      }
+    } catch (err) {
+      console.error("Erro ao atualizar status:", err)
+    } finally {
+      setAtualizandoStatus(false)
+    }
+  }
+
+  const enviarNotificacaoWhatsApp = () => {
+    if (!os?.cliente.telefone) return alert("Cliente não possui telefone cadastrado.")
+    const cleanPhone = os.cliente.telefone.replace(/\D/g, "")
+    const texto = encodeURIComponent(
+      `Olá ${os.cliente.nome}! Atualização sobre o seu ${os.dispositivo} (${os.numero}):\n` +
+      `Status atual: *${os.status}*\n` +
+      `Valor Total: R$ ${Number(os.valorTotal).toFixed(2)}\n\n` +
+      `Qualquer dúvida estamos à disposição na loja!`
+    )
+    window.open(`https://wa.me/55${cleanPhone}?text=${texto}`, "_blank")
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center text-slate-500">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-2" />
+      </div>
+    )
+  }
+
+  if (!os) {
+    return (
+      <div className="text-center py-12 text-slate-400">
+        Ordem de Serviço não encontrada.
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/ordens-servico"
+            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+              <span>{os.numero}</span>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold">
+                {os.status}
+              </span>
+            </h1>
+            <p className="text-sm text-slate-400 mt-0.5">
+              Criada em {new Date(os.createdAt).toLocaleDateString("pt-BR")}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={enviarNotificacaoWhatsApp}
+            className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition-all text-sm"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>Enviar Aviso no WhatsApp</span>
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium px-4 py-2.5 rounded-xl transition-all text-sm shrink-0"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Imprimir OS</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Card de Alteração Direta de Status */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+        <div>
+          <h3 className="text-sm font-semibold text-white">Alterar Status da Ordem de Serviço</h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Ao salvar, o novo status é registrado automaticamente na linha do tempo de auditoria.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <select
+            value={novoStatus}
+            onChange={(e) => setNovoStatus(e.target.value)}
+            className="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+          >
+            <option value="RECEBIDA">RECEBIDA</option>
+            <option value="EM_ANALISE">EM ANÁLISE</option>
+            <option value="AGUARDANDO_APROVACAO">AGUARDANDO APROVAÇÃO</option>
+            <option value="APROVADA">APROVADA</option>
+            <option value="EM_MANUTENCAO">EM MANUTENÇÃO</option>
+            <option value="CONCLUIDA">CONCLUÍDA</option>
+            <option value="ENTREGUE">ENTREGUE</option>
+            <option value="CANCELADA">CANCELADA</option>
+          </select>
+          <button
+            onClick={handleMudarStatus}
+            disabled={atualizandoStatus || !novoStatus || novoStatus === os.status}
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20 shrink-0"
+          >
+            {atualizandoStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            <span>Atualizar Status</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Grid de Informações */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Cliente */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+            <User className="w-4 h-4 text-blue-500" />
+            <span>Dados do Cliente</span>
+          </h3>
+          <p className="text-lg font-bold text-white">{os.cliente.nome}</p>
+          {os.cliente.telefone && <p className="text-sm text-slate-300">Tel: {os.cliente.telefone}</p>}
+          {os.cliente.email && <p className="text-sm text-slate-400">Email: {os.cliente.email}</p>}
+        </div>
+
+        {/* Aparelho */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+            <Smartphone className="w-4 h-4 text-blue-500" />
+            <span>Dispositivo</span>
+          </h3>
+          <p className="text-lg font-bold text-white">{os.dispositivo}</p>
+          <p className="text-sm text-slate-300">
+            {[os.marca, os.modelo].filter(Boolean).join(" - ") || "Sem modelo"}
+          </p>
+          {os.imei && <p className="text-xs text-slate-400">IMEI: {os.imei}</p>}
+        </div>
+      </div>
+
+      {/* Defeito e Valores */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+          <Wrench className="w-4 h-4 text-blue-500" />
+          <span>Defeito e Diagnóstico</span>
+        </h3>
+        <div>
+          <span className="text-xs text-slate-500 block">Defeito Relatado:</span>
+          <p className="text-sm text-slate-200 mt-1">{os.defeitoRelatado}</p>
+        </div>
+        {os.diagnostico && (
+          <div>
+            <span className="text-xs text-slate-500 block">Laudo Técnico:</span>
+            <p className="text-sm text-slate-300 mt-1">{os.diagnostico}</p>
+          </div>
+        )}
+        <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Garantia de {os.garantiaDias} dias inclusa</span>
+          </div>
+          <div className="text-right">
+            <span className="text-xs text-slate-500 block">Valor Total:</span>
+            <span className="text-xl font-bold text-emerald-400">
+              R$ {Number(os.valorTotal).toFixed(2)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Audit Trail / Histórico de Mudanças */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+          <Clock className="w-4 h-4 text-blue-500" />
+          <span>Histórico de Atualizações (Audit Trail)</span>
+        </h3>
+        <div className="space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-800">
+          {os.historicos.map((h) => (
+            <div key={h.id} className="relative pl-8 flex items-start justify-between text-sm">
+              <div className="absolute left-1.5 top-1 w-4 h-4 rounded-full bg-blue-600 border-2 border-slate-900" />
+              <div>
+                <span className="font-semibold text-white block">Status alterado para {h.statusNovo}</span>
+                {h.observacao && <span className="text-xs text-slate-400 block mt-0.5">{h.observacao}</span>}
+                <span className="text-[11px] text-slate-500 block mt-1">
+                  Por {h.usuario?.nome || "Sistema"}
+                </span>
+              </div>
+              <span className="text-xs text-slate-500 shrink-0">
+                {new Date(h.criadoEm).toLocaleString("pt-BR")}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
