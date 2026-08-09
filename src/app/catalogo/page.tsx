@@ -65,13 +65,10 @@ export default function CatalogoPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 flex items-center justify-center shrink-0">
-              <Image
+              <img
                 src="/assets/wrldevotec.png"
                 alt="Evo Etec Logo"
-                width={56}
-                height={56}
                 className="object-contain w-14 h-14 hover:scale-105 transition-transform drop-shadow-sm"
-                priority
               />
             </div>
             <div>

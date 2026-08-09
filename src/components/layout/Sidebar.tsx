@@ -63,13 +63,10 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         <div className="h-20 px-6 flex items-center justify-between border-b border-zinc-100">
           <Link href="/dashboard" className="flex items-center gap-3">
             <div className="w-12 h-12 flex items-center justify-center shrink-0">
-              <Image
+              <img
                 src="/assets/wrldevotec.png"
                 alt="Evo Etec Logo"
-                width={52}
-                height={52}
                 className="object-contain w-12 h-12 hover:scale-105 transition-transform drop-shadow-sm"
-                priority
               />
             </div>
             <div>

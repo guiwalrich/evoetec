@@ -41,13 +41,10 @@ export default function AssinaturaPage() {
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center justify-center">
-            <Image
+            <img
               src="/assets/wrldevotec.png"
               alt="Evo Etec Logo"
-              width={80}
-              height={80}
-              className="object-contain w-20 h-20 hover:scale-105 transition-transform drop-shadow-md"
-              priority
+              className="object-contain w-20 h-20 hover:scale-105 transition-transform drop-shadow-md mx-auto"
             />
           </div>
 
