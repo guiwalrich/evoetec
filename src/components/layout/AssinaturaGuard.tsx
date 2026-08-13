@@ -4,11 +4,14 @@
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import GracePeriodBanner from "@/components/layout/GracePeriodBanner"
 
 export function AssinaturaGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const [loading, setLoading] = useState(true)
+  const [gracePeriod, setGracePeriod] = useState(false)
+  const [vencimento, setVencimento] = useState<string>("")
 
   useEffect(() => {
     // Não executa checagem se já estiver na página de assinatura
@@ -29,6 +32,11 @@ export function AssinaturaGuard({ children }: { children: React.ReactNode }) {
             router.push("/assinatura")
             return
           }
+
+          if (json.gracePeriod && json.vencimento) {
+            setGracePeriod(true)
+            setVencimento(json.vencimento)
+          }
         }
       } catch (err) {
         console.error("Erro ao verificar status da assinatura:", err)
@@ -48,5 +56,10 @@ export function AssinaturaGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
-  return <>{children}</>
+  return (
+    <>
+      {gracePeriod && vencimento && <GracePeriodBanner vencimento={vencimento} />}
+      {children}
+    </>
+  )
 }

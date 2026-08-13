@@ -2,8 +2,15 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import Image from "next/image"
 import { Search, Smartphone, MessageCircle, ChevronLeft, ChevronRight, Loader2, CheckCircle2, MapPin } from "lucide-react"
+
+interface CategoriaItem {
+  id: string
+  nome: string
+  _count: {
+    produtos: number
+  }
+}
 
 interface ProdutoCatalogo {
   id: string
@@ -12,6 +19,11 @@ interface ProdutoCatalogo {
   precoVenda: number
   quantidadeEstoque: number
   imagemUrl: string | null
+  categoriaId: string | null
+  categoria?: {
+    id: string
+    nome: string
+  } | null
 }
 
 interface EmpresaInfo {
@@ -22,21 +34,27 @@ interface EmpresaInfo {
 
 export default function CatalogoPage() {
   const [produtos, setProdutos] = useState<ProdutoCatalogo[]>([])
+  const [categorias, setCategorias] = useState<CategoriaItem[]>([])
+  const [selectedCat, setSelectedCat] = useState<string>("ALL")
   const [empresa, setEmpresa] = useState<EmpresaInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState("")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [totalProdutos, setTotalProdutos] = useState(0)
 
   const carregarProdutos = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/catalogo?busca=${encodeURIComponent(busca)}&page=${page}&limit=12`)
+      const url = `/api/catalogo?busca=${encodeURIComponent(busca)}&categoriaId=${selectedCat}&page=${page}&limit=12`
+      const res = await fetch(url)
       const json = await res.json()
       if (res.ok && json) {
         setProdutos(Array.isArray(json.data) ? json.data : [])
+        setCategorias(Array.isArray(json.categorias) ? json.categorias : [])
         setEmpresa(json.empresa || { nomeFantasia: "EVO ETEC", telefone: null, endereco: null })
         setTotalPages(json.pagination?.totalPages || 1)
+        setTotalProdutos(json.pagination?.total || 0)
       } else {
         setProdutos([])
       }
@@ -46,7 +64,7 @@ export default function CatalogoPage() {
     } finally {
       setLoading(false)
     }
-  }, [busca, page])
+  }, [busca, selectedCat, page])
 
   useEffect(() => {
     carregarProdutos()
@@ -124,6 +142,34 @@ export default function CatalogoPage() {
               />
             </div>
           </div>
+
+          {/* Abas de Categorias Pílula */}
+          <div className="pt-4 flex items-center justify-center flex-wrap gap-2">
+            <button
+              onClick={() => { setSelectedCat("ALL"); setPage(1); }}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                selectedCat === "ALL"
+                  ? "bg-black text-white shadow-md"
+                  : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-100 shadow-sm"
+              }`}
+            >
+              Todos ({totalProdutos})
+            </button>
+
+            {categorias.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => { setSelectedCat(cat.id); setPage(1); }}
+                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  selectedCat === cat.id
+                    ? "bg-black text-white shadow-md"
+                    : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-100 shadow-sm"
+                }`}
+              >
+                {cat.nome} ({cat._count.produtos})
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -136,7 +182,7 @@ export default function CatalogoPage() {
           </div>
         ) : produtos.length === 0 ? (
           <div className="py-20 text-center text-zinc-400">
-            Nenhum produto disponível no momento.
+            Nenhum produto disponível nesta categoria no momento.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
@@ -161,6 +207,12 @@ export default function CatalogoPage() {
                   <h3 className="font-bold text-zinc-900 text-base leading-snug group-hover:text-black transition-colors">
                     {p.nome}
                   </h3>
+
+                  {p.categoria && (
+                    <span className="inline-block mt-1 text-[10px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
+                      {p.categoria.nome}
+                    </span>
+                  )}
 
                   {p.descricao && (
                     <p className="text-xs text-zinc-500 mt-2 line-clamp-2 leading-relaxed font-light">

@@ -39,8 +39,18 @@ interface Produto {
   fornecedor: FornecedorSelect | null
 }
 
+interface CategoriaFilter {
+  id: string
+  nome: string
+  _count: {
+    produtos: number
+  }
+}
+
 export default function ProdutosPage() {
   const [produtos, setProdutos] = useState<Produto[]>([])
+  const [categorias, setCategorias] = useState<CategoriaFilter[]>([])
+  const [selectedCat, setSelectedCat] = useState<string>("ALL")
   const [fornecedores, setFornecedores] = useState<FornecedorSelect[]>([])
   const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState("")
@@ -70,10 +80,11 @@ export default function ProdutosPage() {
   const carregarProdutos = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/produtos?busca=${encodeURIComponent(busca)}&page=${page}&limit=10`)
+      const res = await fetch(`/api/produtos?busca=${encodeURIComponent(busca)}&categoriaId=${selectedCat}&page=${page}&limit=10`)
       const json = await res.json()
       if (res.ok) {
         setProdutos(json.data)
+        setCategorias(json.categorias || [])
         setTotalPages(json.pagination.totalPages)
         setTotal(json.pagination.total)
       }
@@ -82,7 +93,7 @@ export default function ProdutosPage() {
     } finally {
       setLoading(false)
     }
-  }, [busca, page])
+  }, [busca, selectedCat, page])
 
   useEffect(() => {
     carregarProdutos()
@@ -239,19 +250,50 @@ export default function ProdutosPage() {
         </button>
       </div>
 
-      {/* Busca Pílula */}
-      <div className="bg-white border border-zinc-200/80 rounded-full p-2 pl-5 flex items-center gap-3 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
-        <Search className="w-5 h-5 text-zinc-400" strokeWidth={1.5} />
-        <input
-          type="text"
-          value={busca}
-          onChange={(e) => {
-            setBusca(e.target.value)
-            setPage(1)
-          }}
-          placeholder="Buscar produto por nome, código de barras ou descrição..."
-          className="bg-transparent border-none text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none w-full"
-        />
+      {/* Busca e Filtro de Categorias Pílula */}
+      <div className="bg-white border border-zinc-100/90 rounded-[32px] p-6 space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-200/80 rounded-full px-5 py-2.5">
+          <Search className="w-5 h-5 text-zinc-400" strokeWidth={1.5} />
+          <input
+            type="text"
+            value={busca}
+            onChange={(e) => {
+              setBusca(e.target.value)
+              setPage(1)
+            }}
+            placeholder="Buscar produto por nome, código de barras ou descrição..."
+            className="bg-transparent border-none text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none w-full"
+          />
+        </div>
+
+        {/* Abas de Categorias Pílula */}
+        {categorias.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <button
+              onClick={() => { setSelectedCat("ALL"); setPage(1); }}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                selectedCat === "ALL"
+                  ? "bg-black text-white shadow-sm"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
+            >
+              Todas as Categorias ({total})
+            </button>
+            {categorias.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => { setSelectedCat(cat.id); setPage(1); }}
+                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                  selectedCat === cat.id
+                    ? "bg-black text-white shadow-sm"
+                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                }`}
+              >
+                {cat.nome} ({cat._count.produtos})
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Tabela Soft UI */}

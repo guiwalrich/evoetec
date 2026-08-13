@@ -7,6 +7,8 @@ import { Header } from "@/components/layout/Header"
 import { NextAuthProvider } from "@/components/providers/NextAuthProvider"
 import { AssinaturaGuard } from "@/components/layout/AssinaturaGuard"
 
+import SupportButton from "@/components/layout/SupportButton"
+
 export default function DashboardLayout({
   children,
 }: {
@@ -32,6 +34,9 @@ export default function DashboardLayout({
             </div>
           </div>
         </div>
+
+        {/* Botão de suporte global */}
+        <SupportButton />
       </AssinaturaGuard>
     </NextAuthProvider>
   )

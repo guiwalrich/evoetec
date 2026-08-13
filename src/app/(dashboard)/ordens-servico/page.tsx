@@ -47,6 +47,8 @@ const statusBadges: Record<string, { label: string; style: string; icon: any }> 
   CANCELADA: { label: "Cancelada", style: "bg-red-50 text-red-700 border-red-200", icon: XCircle },
 }
 
+import RemoveButton from "@/components/ordens/RemoveButton"
+
 export default function OrdensServicoPage() {
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
   const [loading, setLoading] = useState(true)
@@ -211,7 +213,7 @@ export default function OrdensServicoPage() {
                       <td className="px-6 py-4 font-extrabold text-zinc-900">
                         R$ {Number(os.valorTotal).toFixed(2)}
                       </td>
-                      <td className="px-6 py-4 text-right space-x-1">
+                      <td className="px-6 py-4 text-right space-x-2 flex items-center justify-end">
                         <a
                           href={`/ordens-servico/${os.id}`}
                           className="p-2 rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors inline-block"
@@ -219,6 +221,7 @@ export default function OrdensServicoPage() {
                         >
                           <Eye className="w-4 h-4" strokeWidth={1.5} />
                         </a>
+                        <RemoveButton ordemId={os.id} numeroOS={os.numero} onSuccess={carregarOrdens} />
                       </td>
                     </tr>
                   )

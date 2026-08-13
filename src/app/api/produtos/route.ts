@@ -6,7 +6,7 @@ import { withTenant } from "@/lib/tenant"
 import { produtoSchema } from "@/validators/produto"
 import { StatusProduto } from "@prisma/client"
 
-// GET: Listar produtos com busca, filtro de status e paginação
+// GET: Listar produtos com busca, filtro de status/categoria e paginação
 export async function GET(req: Request) {
   try {
     const session = await auth()
@@ -17,6 +17,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const busca = searchParams.get("busca") || ""
     const status = searchParams.get("status") as StatusProduto | null
+    const categoriaId = searchParams.get("categoriaId") || ""
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
     const skip = (page - 1) * limit
@@ -25,6 +26,7 @@ export async function GET(req: Request) {
 
     const where = tenant.whereTenant({
       ...(status ? { status } : {}),
+      ...(categoriaId && categoriaId !== "ALL" ? { categoriaId } : {}),
       ...(busca
         ? {
             OR: [
@@ -36,7 +38,7 @@ export async function GET(req: Request) {
         : {}),
     })
 
-    const [produtos, total] = await Promise.all([
+    const [produtos, total, categorias] = await Promise.all([
       prisma.produto.findMany({
         where,
         skip,
@@ -48,10 +50,26 @@ export async function GET(req: Request) {
         },
       }),
       prisma.produto.count({ where }),
+      prisma.categoria.findMany({
+        where: tenant.whereTenant({}),
+        orderBy: { ordem: "asc" },
+        select: {
+          id: true,
+          nome: true,
+          _count: {
+            select: {
+              produtos: {
+                where: tenant.whereTenant({}),
+              },
+            },
+          },
+        },
+      }),
     ])
 
     return NextResponse.json({
       data: produtos,
+      categorias,
       pagination: {
         total,
         page,

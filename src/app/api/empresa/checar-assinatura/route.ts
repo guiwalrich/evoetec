@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const session = await auth()
     if (!session?.user?.empresaId) {
-      return NextResponse.json({ statusAssinatura: "BLOQUEADO" }, { status: 401 })
+      return NextResponse.json({ statusAssinatura: "BLOQUEADO", gracePeriod: false }, { status: 401 })
     }
 
     const empresaId = session.user.empresaId
@@ -24,30 +24,45 @@ export async function GET() {
     })
 
     if (!empresa) {
-      return NextResponse.json({ statusAssinatura: "BLOQUEADO" }, { status: 404 })
+      return NextResponse.json({ statusAssinatura: "BLOQUEADO", gracePeriod: false }, { status: 404 })
     }
 
     const agora = new Date()
-    let statusAtual = empresa.statusAssinatura
+    let statusAtual: string = empresa.statusAssinatura
+    let gracePeriod = false
+    const vencimento = empresa.trialVenceEm || agora
 
-    // Se o trial venceu, atualiza para BLOQUEADO automaticamente
-    if (empresa.statusAssinatura === "TRIAL" && empresa.trialVenceEm && agora > empresa.trialVenceEm) {
-      statusAtual = "BLOQUEADO"
-      await prisma.empresa.update({
-        where: { id: empresaId },
-        data: { statusAssinatura: "BLOQUEADO" },
-      })
+    // Lógica de carência de 48h após o vencimento
+    if (vencimento && agora > vencimento) {
+      const diffMs = agora.getTime() - new Date(vencimento).getTime()
+      const horas = diffMs / (1000 * 60 * 60)
 
-      // Notifica no Discord
-      await sendDiscordNotification(
-        "🚨 Período de Trial Expirado",
-        `A empresa **${empresa.nomeFantasia}** teve o período de teste expirado e foi bloqueada automaticamente.`,
-        15158332 // Vermelho
-      )
+      if (horas <= 48) {
+        // Carência de 48h – permite acesso, mas ativa gracePeriod flag
+        gracePeriod = true
+        statusAtual = "CARENCIA"
+      } else {
+        // Bloqueio definitivo
+        statusAtual = "BLOQUEADO"
+        if (empresa.statusAssinatura !== "BLOQUEADO") {
+          await prisma.empresa.update({
+            where: { id: empresaId },
+            data: { statusAssinatura: "BLOQUEADO" },
+          })
+
+          await sendDiscordNotification(
+            "🚨 Assinatura Bloqueada - Carência Expirada",
+            `A empresa **${empresa.nomeFantasia}** excedeu o período de carência de 48h e foi bloqueada.`,
+            15158332
+          )
+        }
+      }
     }
 
     return NextResponse.json({
       statusAssinatura: statusAtual,
+      gracePeriod,
+      vencimento: vencimento.toISOString(),
       trialVenceEm: empresa.trialVenceEm,
       trialIniciadoEm: empresa.trialIniciadoEm,
     })

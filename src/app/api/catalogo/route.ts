@@ -2,11 +2,12 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-// GET: Listagem pública de produtos ativos (não exige autenticação)
+// GET: Listagem pública de produtos ativos ordenados por categoria (não exige autenticação)
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
     const busca = searchParams.get("busca") || ""
+    const categoriaId = searchParams.get("categoriaId") || ""
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "12")
     const skip = (page - 1) * limit
@@ -14,6 +15,7 @@ export async function GET(req: Request) {
     const where = {
       status: "ATIVO" as const,
       deletedAt: null,
+      ...(categoriaId && categoriaId !== "ALL" ? { categoriaId } : {}),
       ...(busca
         ? {
             OR: [
@@ -24,7 +26,7 @@ export async function GET(req: Request) {
         : {}),
     }
 
-    const [produtos, total, empresa] = await Promise.all([
+    const [produtos, total, empresa, categorias] = await Promise.all([
       prisma.produto.findMany({
         where,
         skip,
@@ -37,6 +39,8 @@ export async function GET(req: Request) {
           precoVenda: true,
           quantidadeEstoque: true,
           imagemUrl: true,
+          categoriaId: true,
+          categoria: { select: { id: true, nome: true } },
         },
       }),
       prisma.produto.count({ where }),
@@ -47,10 +51,26 @@ export async function GET(req: Request) {
           endereco: true,
         },
       }),
+      prisma.categoria.findMany({
+        where: { deletedAt: null },
+        orderBy: { ordem: "asc" },
+        select: {
+          id: true,
+          nome: true,
+          _count: {
+            select: {
+              produtos: {
+                where: { status: "ATIVO", deletedAt: null },
+              },
+            },
+          },
+        },
+      }),
     ])
 
     return NextResponse.json({
       data: produtos,
+      categorias,
       empresa: empresa || { nomeFantasia: "EVO ETEC", telefone: null, endereco: null },
       pagination: {
         total,
