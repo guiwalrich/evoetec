@@ -13,6 +13,7 @@ export const produtoSchema = z.object({
   status: z.nativeEnum(StatusProduto).default(StatusProduto.ATIVO),
   imagemUrl: z.string().optional().nullable(),
   categoriaId: z.string().optional().nullable(),
+  categoriaNome: z.string().optional().nullable(),
   fornecedorId: z.string().optional().nullable(),
 })
 

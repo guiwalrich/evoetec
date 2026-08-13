@@ -42,7 +42,7 @@ export default function NovoProdutoPage() {
   const [precoVenda, setPrecoVenda] = useState<number>(0)
   const [quantidadeEstoque, setQuantidadeEstoque] = useState<number>(0)
   const [estoqueMinimo, setEstoqueMinimo] = useState<number>(1)
-  const [categoriaId, setCategoriaId] = useState("")
+  const [categoriaTexto, setCategoriaTexto] = useState("")
   const [fornecedorId, setFornecedorId] = useState("")
 
   // Imagem State & Preview
@@ -138,7 +138,7 @@ export default function NovoProdutoPage() {
       quantidadeEstoque: Number(quantidadeEstoque),
       estoqueMinimo: Number(estoqueMinimo),
       status: "ATIVO",
-      categoriaId: categoriaId || null,
+      categoriaNome: categoriaTexto.trim() || null,
       fornecedorId: fornecedorId || null,
       imagemUrl: imagemUrl || null,
     }
@@ -270,24 +270,26 @@ export default function NovoProdutoPage() {
                 />
               </div>
 
-              {/* Categoria Dropdown */}
+              {/* Categoria Input com Datalist de Sugestão */}
               <div className="space-y-1">
                 <label className="block text-xs font-semibold text-zinc-700 ml-1 flex items-center gap-1">
                   <Tag className="w-3.5 h-3.5 text-zinc-500" strokeWidth={1.5} />
                   <span>Categoria *</span>
                 </label>
-                <select
-                  value={categoriaId}
-                  onChange={(e) => setCategoriaId(e.target.value)}
+                <input
+                  type="text"
+                  required
+                  list="categorias-sugestoes"
+                  value={categoriaTexto}
+                  onChange={(e) => setCategoriaTexto(e.target.value)}
+                  placeholder="Digite ou selecione uma categoria"
                   className="w-full bg-white border border-zinc-200/80 rounded-full px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:border-zinc-800 shadow-sm"
-                >
-                  <option value="">-- Selecione a Categoria --</option>
+                />
+                <datalist id="categorias-sugestoes">
                   {categorias.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.nome}
-                    </option>
+                    <option key={cat.id} value={cat.nome} />
                   ))}
-                </select>
+                </datalist>
               </div>
             </div>
 

@@ -37,9 +37,42 @@ export async function PUT(
       return NextResponse.json({ message: "Produto não encontrado" }, { status: 404 })
     }
 
+    const data = parsed.data
+    let finalCategoriaId = data.categoriaId
+
+    // Lógica para processar Categoria por Nome
+    if (data.categoriaNome && data.categoriaNome.trim()) {
+      const nomeLimpo = data.categoriaNome.trim()
+      // 1. Procurar categoria existente (Ignorando case-sensitive)
+      const categoriaExistente = await prisma.categoria.findFirst({
+        where: tenant.whereTenant({
+          nome: { equals: nomeLimpo, mode: "insensitive" },
+          deletedAt: null,
+        }),
+      })
+
+      if (categoriaExistente) {
+        finalCategoriaId = categoriaExistente.id
+      } else {
+        // 2. Criar nova categoria caso não exista
+        const novaCategoria = await prisma.categoria.create({
+          data: tenant.dataTenant({
+            nome: nomeLimpo,
+            ordem: 0,
+          }),
+        })
+        finalCategoriaId = novaCategoria.id
+      }
+    }
+
+    const { categoriaNome, ...prismaData } = data
+
     const produto = await prisma.produto.update({
       where: { id },
-      data: parsed.data,
+      data: {
+        ...prismaData,
+        categoriaId: finalCategoriaId || null,
+      },
     })
 
     return NextResponse.json(produto)

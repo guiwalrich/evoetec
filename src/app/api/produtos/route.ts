@@ -51,7 +51,7 @@ export async function GET(req: Request) {
       }),
       prisma.produto.count({ where }),
       prisma.categoria.findMany({
-        where: tenant.whereTenant({}),
+        where: tenant.whereTenant({ deletedAt: null }),
         orderBy: { ordem: "asc" },
         select: {
           id: true,
@@ -59,7 +59,7 @@ export async function GET(req: Request) {
           _count: {
             select: {
               produtos: {
-                where: tenant.whereTenant({}),
+                where: tenant.whereTenant({ status: "ATIVO", deletedAt: null }),
               },
             },
           },
@@ -102,9 +102,41 @@ export async function POST(req: Request) {
     }
 
     const tenant = withTenant(session.user.empresaId)
+    const data = parsed.data
+    let finalCategoriaId = data.categoriaId
 
+    // Lógica para processar Categoria por Nome
+    if (data.categoriaNome && data.categoriaNome.trim()) {
+      const nomeLimpo = data.categoriaNome.trim()
+      // 1. Procurar categoria existente (Ignorando case-sensitive)
+      const categoriaExistente = await prisma.categoria.findFirst({
+        where: tenant.whereTenant({
+          nome: { equals: nomeLimpo, mode: "insensitive" },
+          deletedAt: null,
+        }),
+      })
+
+      if (categoriaExistente) {
+        finalCategoriaId = categoriaExistente.id
+      } else {
+        // 2. Criar nova categoria caso não exista
+        const novaCategoria = await prisma.categoria.create({
+          data: tenant.dataTenant({
+            nome: nomeLimpo,
+            ordem: 0,
+          }),
+        })
+        finalCategoriaId = novaCategoria.id
+      }
+    }
+
+    // Remover campo auxiliar do payload do Prisma
+    const { categoriaNome, ...prismaData } = data
     const produto = await prisma.produto.create({
-      data: tenant.dataTenant(parsed.data),
+      data: tenant.dataTenant({
+        ...prismaData,
+        categoriaId: finalCategoriaId || null,
+      }),
     })
 
     return NextResponse.json(produto, { status: 201 })

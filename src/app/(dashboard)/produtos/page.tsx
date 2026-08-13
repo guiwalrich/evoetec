@@ -83,7 +83,7 @@ export default function ProdutosPage() {
   const [status, setStatus] = useState<"ATIVO" | "INATIVO">("ATIVO")
   const [imagemUrl, setImagemUrl] = useState<string | null>(null)
   const [uploadingImagem, setUploadingImagem] = useState(false)
-  const [categoriaId, setCategoriaId] = useState("")
+  const [categoriaTexto, setCategoriaTexto] = useState("")
   const [fornecedorId, setFornecedorId] = useState("")
 
   const carregarProdutos = useCallback(async () => {
@@ -132,7 +132,7 @@ export default function ProdutosPage() {
     setEstoqueMinimo(1)
     setStatus("ATIVO")
     setImagemUrl(null)
-    setCategoriaId("")
+    setCategoriaTexto("")
     setFornecedorId("")
     setErroForm("")
     setModalOpen(true)
@@ -149,7 +149,7 @@ export default function ProdutosPage() {
     setEstoqueMinimo(p.estoqueMinimo)
     setStatus(p.status)
     setImagemUrl(p.imagemUrl || null)
-    setCategoriaId(p.categoriaId || p.categoria?.id || "")
+    setCategoriaTexto(p.categoria?.nome || "")
     setFornecedorId(p.fornecedor?.id || "")
     setErroForm("")
     setModalOpen(true)
@@ -199,7 +199,7 @@ export default function ProdutosPage() {
       estoqueMinimo: Number(estoqueMinimo),
       status,
       imagemUrl,
-      categoriaId: categoriaId || null,
+      categoriaNome: categoriaTexto.trim() || null,
       fornecedorId: fornecedorId || null,
     }
 
@@ -544,18 +544,20 @@ export default function ProdutosPage() {
                     <Tag className="w-3 h-3 text-zinc-500" strokeWidth={1.5} />
                     <span>Categoria *</span>
                   </label>
-                  <select
-                    value={categoriaId}
-                    onChange={(e) => setCategoriaId(e.target.value)}
+                  <input
+                    type="text"
+                    required
+                    list="modal-categorias-sugestoes"
+                    value={categoriaTexto}
+                    onChange={(e) => setCategoriaTexto(e.target.value)}
+                    placeholder="Digite ou selecione uma categoria"
                     className="w-full bg-white border border-zinc-200/80 rounded-full px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-zinc-800"
-                  >
-                    <option value="">-- Selecione a Categoria --</option>
+                  />
+                  <datalist id="modal-categorias-sugestoes">
                     {categorias.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.nome}
-                      </option>
+                      <option key={cat.id} value={cat.nome} />
                     ))}
-                  </select>
+                  </datalist>
                 </div>
               </div>
 
