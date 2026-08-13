@@ -9,7 +9,7 @@ import { Wrench, Lock, ArrowLeft, CheckCircle2, AlertCircle, Loader2 } from "luc
 function RedefinirSenhaContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const token = searchParams.get("token")
+  const token = searchParams?.get("token") || ""
 
   const [senha, setSenha] = useState("")
   const [confirmarSenha, setConfirmarSenha] = useState("")

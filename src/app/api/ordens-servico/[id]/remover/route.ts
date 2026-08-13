@@ -3,10 +3,16 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-// Função utilitária para enviar embed ao Discord (auditoria)
-async function sendAudit(embed: any) {
-  const url = process.env.DISCORD_WEBHOOK_AUDITORIA_URL || process.env.DISCORD_WEBHOOK_URL
-  if (!url) return
+// Função utilitária para enviar embed ao Discord (auditoria de remoção de OS)
+async function sendOsRemovalAudit(embed: any) {
+  const url =
+    process.env.DISCORD_WEBHOOK_OS_REMOVE_URL ||
+    process.env.DISCORD_WEBHOOK_AUDITORIA_URL ||
+    process.env.DISCORD_WEBHOOK_URL
+  if (!url) {
+    console.warn("DISCORD_WEBHOOK_OS_REMOVE_URL não configurado")
+    return
+  }
   try {
     await fetch(url, {
       method: "POST",
@@ -102,7 +108,7 @@ export async function PATCH(
       ],
       timestamp: new Date().toISOString(),
     }
-    await sendAudit(embed)
+    await sendOsRemovalAudit(embed)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

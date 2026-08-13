@@ -17,10 +17,16 @@ import {
   AlertCircle,
   Truck,
   Upload,
-  ImageIcon
+  ImageIcon,
+  Tag
 } from "lucide-react"
 
 interface FornecedorSelect {
+  id: string
+  nome: string
+}
+
+interface CategoriaSelect {
   id: string
   nome: string
 }
@@ -36,6 +42,8 @@ interface Produto {
   estoqueMinimo: number
   status: "ATIVO" | "INATIVO"
   imagemUrl: string | null
+  categoriaId?: string | null
+  categoria?: CategoriaSelect | null
   fornecedor: FornecedorSelect | null
 }
 
@@ -75,6 +83,7 @@ export default function ProdutosPage() {
   const [status, setStatus] = useState<"ATIVO" | "INATIVO">("ATIVO")
   const [imagemUrl, setImagemUrl] = useState<string | null>(null)
   const [uploadingImagem, setUploadingImagem] = useState(false)
+  const [categoriaId, setCategoriaId] = useState("")
   const [fornecedorId, setFornecedorId] = useState("")
 
   const carregarProdutos = useCallback(async () => {
@@ -123,6 +132,7 @@ export default function ProdutosPage() {
     setEstoqueMinimo(1)
     setStatus("ATIVO")
     setImagemUrl(null)
+    setCategoriaId("")
     setFornecedorId("")
     setErroForm("")
     setModalOpen(true)
@@ -139,6 +149,7 @@ export default function ProdutosPage() {
     setEstoqueMinimo(p.estoqueMinimo)
     setStatus(p.status)
     setImagemUrl(p.imagemUrl || null)
+    setCategoriaId(p.categoriaId || p.categoria?.id || "")
     setFornecedorId(p.fornecedor?.id || "")
     setErroForm("")
     setModalOpen(true)
@@ -188,6 +199,7 @@ export default function ProdutosPage() {
       estoqueMinimo: Number(estoqueMinimo),
       status,
       imagemUrl,
+      categoriaId: categoriaId || null,
       fornecedorId: fornecedorId || null,
     }
 
@@ -241,13 +253,15 @@ export default function ProdutosPage() {
           </p>
         </div>
 
-        <button
-          onClick={abrirModalNovo}
-          className="inline-flex items-center justify-center gap-2 bg-black hover:bg-zinc-800 text-white font-semibold px-5 py-3 rounded-full shadow-md transition-all text-xs cursor-pointer"
-        >
-          <Plus className="w-4 h-4" strokeWidth={1.5} />
-          <span>Novo Produto / Peça</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <a
+            href="/produtos/novo"
+            className="inline-flex items-center justify-center gap-2 bg-black hover:bg-zinc-800 text-white font-semibold px-5 py-3 rounded-full shadow-md transition-all text-xs cursor-pointer"
+          >
+            <Plus className="w-4 h-4" strokeWidth={1.5} />
+            <span>Novo Produto / Peça</span>
+          </a>
+        </div>
       </div>
 
       {/* Busca e Filtro de Categorias Pílula */}
@@ -335,15 +349,26 @@ export default function ProdutosPage() {
                             <img
                               src={p.imagemUrl}
                               alt={p.nome}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null
+                                e.currentTarget.src = "/assets/wrldevotec.webp"
+                              }}
                               className="w-10 h-10 rounded-2xl object-cover border border-zinc-200 shrink-0"
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-400 shrink-0">
-                              <ImageIcon className="w-5 h-5" strokeWidth={1.5} />
-                            </div>
+                            <img
+                              src="/assets/wrldevotec.webp"
+                              alt="Logo Fallback"
+                              className="w-10 h-10 rounded-2xl object-contain border border-zinc-100 bg-zinc-50 p-1 shrink-0"
+                            />
                           )}
                           <div>
                             <span className="block font-bold text-zinc-900">{p.nome}</span>
+                            {p.categoria && (
+                              <span className="inline-block text-[10px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full mt-0.5">
+                                {p.categoria.nome}
+                              </span>
+                            )}
                             {p.descricao && (
                               <span className="text-xs text-zinc-400 font-normal block truncate max-w-xs">
                                 {p.descricao}
@@ -500,18 +525,38 @@ export default function ProdutosPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-zinc-600 mb-1 ml-2">
-                  Nome do Produto / Peça *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  placeholder="Ex: Tela Display iPhone 13 Original, Carregador 20W Turbo"
-                  className="w-full bg-white border border-zinc-200/80 rounded-full px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-zinc-800"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-zinc-600 mb-1 ml-2">
+                    Nome do Produto / Peça *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    placeholder="Ex: Tela Display iPhone 13 Original"
+                    className="w-full bg-white border border-zinc-200/80 rounded-full px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-zinc-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-zinc-600 mb-1 ml-2 flex items-center gap-1">
+                    <Tag className="w-3 h-3 text-zinc-500" strokeWidth={1.5} />
+                    <span>Categoria *</span>
+                  </label>
+                  <select
+                    value={categoriaId}
+                    onChange={(e) => setCategoriaId(e.target.value)}
+                    className="w-full bg-white border border-zinc-200/80 rounded-full px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-zinc-800"
+                  >
+                    <option value="">-- Selecione a Categoria --</option>
+                    {categorias.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -617,14 +662,14 @@ export default function ProdutosPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-semibold transition-all"
+                  className="px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-semibold transition-all cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={salvando}
-                  className="px-5 py-2.5 rounded-full bg-black hover:bg-zinc-800 text-white text-sm font-semibold transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-full bg-black hover:bg-zinc-800 text-white text-sm font-semibold transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {salvando ? <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} /> : null}
                   <span>{produtoEdicao ? "Atualizar" : "Cadastrar"}</span>

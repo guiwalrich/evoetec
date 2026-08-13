@@ -93,7 +93,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         {/* Menu de Navegação Minimalista */}
         <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-200">
           {menuItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`))
+            const isActive = pathname === item.href || (item.href !== "/dashboard" && Boolean(pathname?.startsWith(`${item.href}/`)))
             const Icon = item.icon
 
             if (item.external) {
