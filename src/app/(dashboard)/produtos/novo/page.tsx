@@ -209,20 +209,12 @@ export default function NovoProdutoPage() {
               </label>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 {previewUrl || imagemUrl ? (
-                  <div className="relative w-28 h-28 rounded-[24px] border border-zinc-200 overflow-hidden shrink-0 group">
+                  <div className="relative w-28 h-28 rounded-[24px] border border-zinc-200 overflow-hidden shrink-0">
                     <img
                       src={previewUrl || imagemUrl || ""}
                       alt="Preview do produto"
                       className="w-full h-full object-cover"
                     />
-                    <button
-                      type="button"
-                      onClick={handleRemoverImagem}
-                      className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all cursor-pointer"
-                      title="Remover foto"
-                    >
-                      <Trash2 className="w-6 h-6" strokeWidth={1.5} />
-                    </button>
                   </div>
                 ) : (
                   <div className="w-28 h-28 rounded-[24px] bg-zinc-50 border border-dashed border-zinc-200 flex flex-col items-center justify-center text-zinc-400 shrink-0">
@@ -230,23 +222,35 @@ export default function NovoProdutoPage() {
                     <span className="text-[10px] text-zinc-400 font-light">Sem Foto</span>
                   </div>
                 )}
-
                 <div className="space-y-2">
-                  <label className="inline-flex items-center justify-center gap-2 bg-black hover:bg-zinc-800 text-white px-5 py-3 rounded-full text-xs font-semibold cursor-pointer transition-all shadow-sm disabled:opacity-50">
-                    {uploadingImagem ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-white" strokeWidth={1.5} />
-                    ) : (
-                      <Upload className="w-4 h-4 text-white" strokeWidth={1.5} />
+                  <div className="flex items-center gap-2">
+                    <label className="inline-flex items-center justify-center gap-2 bg-black hover:bg-zinc-800 text-white px-5 py-3 rounded-full text-xs font-semibold cursor-pointer transition-all shadow-sm disabled:opacity-50">
+                      {uploadingImagem ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-white" strokeWidth={1.5} />
+                      ) : (
+                        <Upload className="w-4 h-4 text-white" strokeWidth={1.5} />
+                      )}
+                      <span>{uploadingImagem ? "Enviando..." : "Escolher foto do produto"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        disabled={uploadingImagem}
+                        className="hidden"
+                      />
+                    </label>
+                    {/* Botão de remoção sempre visível e explícito se houver imagem */}
+                    {(previewUrl || imagemUrl) && (
+                      <button
+                        type="button"
+                        onClick={handleRemoverImagem}
+                        className="inline-flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-5 py-3 rounded-full text-xs font-semibold cursor-pointer transition-all border border-red-200 shadow-sm"
+                      >
+                        <Trash2 className="w-4 h-4" strokeWidth={1.5} />
+                        <span>Remover Imagem</span>
+                      </button>
                     )}
-                    <span>{uploadingImagem ? "Enviando..." : "Escolher foto do produto"}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      disabled={uploadingImagem}
-                      className="hidden"
-                    />
-                  </label>
+                  </div>
                   <p className="text-[11px] text-zinc-400 font-light">
                     Formatos aceitos: WebP, PNG, JPG (Máximo: 5 MB).
                   </p>

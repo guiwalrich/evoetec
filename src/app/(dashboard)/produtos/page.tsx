@@ -494,16 +494,8 @@ export default function ProdutosPage() {
                 </label>
                 <div className="flex items-center gap-4">
                   {imagemUrl ? (
-                    <div className="relative w-16 h-16 rounded-2xl border border-zinc-200 overflow-hidden shrink-0 group">
+                    <div className="relative w-16 h-16 rounded-2xl border border-zinc-200 overflow-hidden shrink-0">
                       <img src={imagemUrl} alt="Preview" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setImagemUrl(null)}
-                        className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all"
-                        title="Remover Imagem"
-                      >
-                        <Trash2 className="w-5 h-5" strokeWidth={1.5} />
-                      </button>
                     </div>
                   ) : (
                     <div className="w-16 h-16 rounded-2xl bg-zinc-50 border border-dashed border-zinc-200 flex flex-col items-center justify-center text-zinc-400 shrink-0">
@@ -511,17 +503,31 @@ export default function ProdutosPage() {
                     </div>
                   )}
 
-                  <label className="flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 px-5 py-2.5 rounded-full border border-zinc-200 text-xs font-semibold cursor-pointer transition-all disabled:opacity-50">
-                    {uploadingImagem ? <Loader2 className="w-4 h-4 animate-spin text-zinc-900" strokeWidth={1.5} /> : <Upload className="w-4 h-4 text-zinc-700" strokeWidth={1.5} />}
-                    <span>{uploadingImagem ? "Enviando..." : "Selecionar Imagem"}</span>
-                    <input
-                      type="file"
-                      accept="image/png, image/jpeg, image/webp"
-                      onChange={handleUploadImagem}
-                      disabled={uploadingImagem}
-                      className="hidden"
-                    />
-                  </label>
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 px-5 py-2.5 rounded-full border border-zinc-200 text-xs font-semibold cursor-pointer transition-all disabled:opacity-50">
+                      {uploadingImagem ? <Loader2 className="w-4 h-4 animate-spin text-zinc-900" strokeWidth={1.5} /> : <Upload className="w-4 h-4 text-zinc-700" strokeWidth={1.5} />}
+                      <span>{uploadingImagem ? "Enviando..." : "Selecionar Imagem"}</span>
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/webp"
+                        onChange={handleUploadImagem}
+                        disabled={uploadingImagem}
+                        className="hidden"
+                      />
+                    </label>
+
+                    {/* Botão de remoção sempre visível e explícito se houver imagem */}
+                    {imagemUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setImagemUrl(null)}
+                        className="flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2.5 rounded-full border border-red-200 text-xs font-semibold cursor-pointer transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" strokeWidth={1.5} />
+                        <span>Remover</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
