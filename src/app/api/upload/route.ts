@@ -2,8 +2,13 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { validarUploadImagem } from "@/lib/upload-validator"
-import { writeFile, mkdir } from "fs/promises"
-import path from "path"
+import { v2 as cloudinary } from "cloudinary"
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 export async function POST(req: Request) {
   try {
@@ -28,19 +33,24 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Garantir que a pasta public/uploads existe
-    const uploadDir = path.join(process.cwd(), "public", "uploads")
-    await mkdir(uploadDir, { recursive: true })
+    // Upload para Cloudinary (retorna URL pública permanente)
+    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder: "evoetec/produtos",
+            resource_type: "image",
+            transformation: [{ width: 800, height: 800, crop: "limit", quality: "auto" }],
+          },
+          (error, result) => {
+            if (error || !result) reject(error)
+            else resolve(result)
+          }
+        )
+        .end(buffer)
+    })
 
-    // Gerar nome único e seguro para o arquivo
-    const ext = file.name.split(".").pop() || "png"
-    const fileName = `produto-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
-    const filePath = path.join(uploadDir, fileName)
-
-    await writeFile(filePath, buffer)
-    const url = `/uploads/${fileName}`
-
-    return NextResponse.json({ url }, { status: 201 })
+    return NextResponse.json({ url: result.secure_url }, { status: 201 })
   } catch (error) {
     console.error("Erro no upload de imagem:", error)
     return NextResponse.json({ message: "Erro ao processar imagem." }, { status: 500 })
