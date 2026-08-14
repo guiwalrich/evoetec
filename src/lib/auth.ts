@@ -34,6 +34,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const senhaValida = await bcrypt.compare(senha, usuario.senha)
         if (!senhaValida) return null
 
+        if (!usuario.emailVerificado) {
+          throw new Error("EmailNotVerified")
+        }
+
         return {
           id: usuario.id,
           name: usuario.nome,

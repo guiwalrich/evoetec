@@ -11,6 +11,7 @@ export const authConfig = {
       const pathname = nextUrl.pathname
       const isAuthRoute = pathname.startsWith("/login") || 
                           pathname.startsWith("/registro") || 
+                          pathname.startsWith("/verificar-email") || 
                           pathname.startsWith("/esqueci-senha") ||
                           pathname.startsWith("/redefinir-senha")
 

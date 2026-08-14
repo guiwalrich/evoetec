@@ -100,7 +100,14 @@ export default function LoginPage() {
       })
 
       if (res?.error) {
-        setErro("Credenciais inválidas. Verifique e-mail e senha.")
+        if (res.error.includes("EmailNotVerified")) {
+          setErro("E-mail não verificado. Redirecionando para tela de verificação...")
+          setTimeout(() => {
+            router.push(`/verificar-email?email=${encodeURIComponent(email)}`)
+          }, 1200)
+        } else {
+          setErro("Credenciais inválidas. Verifique e-mail e senha.")
+        }
       } else {
         router.push("/dashboard")
         router.refresh()

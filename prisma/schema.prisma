@@ -116,6 +116,13 @@ model Usuario {
   role               Role      @default(VENDEDOR)
   resetToken         String?
   resetTokenExpires  DateTime?
+  
+  // Controle de Verificação de E-mail
+  emailVerificado     Boolean   @default(false)
+  codigoVerificacao   String?
+  codigoValidoAte     DateTime?
+  ultimoEnvioCodigoAt DateTime?
+
   empresaId          String
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
