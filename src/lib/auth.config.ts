@@ -18,11 +18,7 @@ export const authConfig = {
       const isPublicRoute = pathname === "/" || pathname.startsWith("/catalogo")
 
       if (!isLoggedIn && !isAuthRoute && !isPublicRoute) {
-        return false // Redireciona para /login automaticamente
-      }
-
-      if (isLoggedIn && isAuthRoute) {
-        return Response.redirect(new URL("/dashboard", nextUrl))
+        return false // Redireciona para /login automaticamente se tentar acessar rotas protegidas
       }
 
       return true

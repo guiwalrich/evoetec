@@ -117,10 +117,13 @@ export default function ConfiguracoesPage() {
       })
 
       if (res.ok) {
-        setAvatarMensagem({ tipo: "sucesso", texto: "Avatar Pixel Art alterado com sucesso!" })
+        setAvatarMensagem({ tipo: "sucesso", texto: "Avatar Pixel Art alterado e salvo com sucesso no banco de dados!" })
         if (updateSession) {
           await updateSession({ avatarId: selectedAvatar })
         }
+        setTimeout(() => {
+          window.location.reload()
+        }, 600)
       } else {
         const json = await res.json()
         setAvatarMensagem({ tipo: "erro", texto: json.message || "Erro ao atualizar avatar." })
