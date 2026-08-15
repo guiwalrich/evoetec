@@ -249,14 +249,15 @@ export default function ConfiguracoesPage() {
           <input
             type="text"
             readOnly
-            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/catalogo`}
+            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/catalogo?empresaId=${(session?.user as any)?.empresaId || ""}`}
             className="w-full bg-zinc-50 border border-zinc-200/80 rounded-full px-5 py-3 text-sm text-zinc-800 font-medium"
           />
           <button
             type="button"
             onClick={() => {
-              navigator.clipboard.writeText(`${window.location.origin}/catalogo`)
-              alert("Link do catálogo copiado com sucesso!")
+              const url = `${window.location.origin}/catalogo?empresaId=${(session?.user as any)?.empresaId || ""}`
+              navigator.clipboard.writeText(url)
+              alert("Link exclusivo do seu catálogo copiado com sucesso!")
             }}
             className="w-full sm:w-auto px-6 py-3 rounded-full bg-black hover:bg-zinc-800 text-white text-xs font-semibold shrink-0 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
           >

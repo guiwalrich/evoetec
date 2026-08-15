@@ -4,7 +4,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import {
   LayoutDashboard,
   Users,
@@ -42,6 +42,7 @@ const menuItems = [
 
 export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
   return (
     <>
@@ -97,10 +98,11 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
             const Icon = item.icon
 
             if (item.external) {
+              const catalogHref = `/catalogo?empresaId=${(session?.user as any)?.empresaId || ""}`
               return (
                 <a
                   key={item.href}
-                  href={item.href}
+                  href={catalogHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-zinc-200/60 transition-all mt-4"
