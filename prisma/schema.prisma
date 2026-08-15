@@ -117,6 +117,9 @@ model Usuario {
   resetToken         String?
   resetTokenExpires  DateTime?
   
+  // Controle de Perfil e Avatar Pixel Art
+  avatarId            Int?      @default(1)
+
   // Controle de Verificação de E-mail
   emailVerificado     Boolean   @default(false)
   codigoVerificacao   String?

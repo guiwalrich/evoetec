@@ -14,11 +14,26 @@ const DISPOSABLE_DOMAINS = [
 ]
 
 const registroSchema = z.object({
-  nomeEmpresa: z.string().min(2, "Nome da assistência é obrigatório"),
-  nomeResponsavel: z.string().min(2, "Nome do responsável é obrigatório"),
-  email: z.string().email("E-mail inválido"),
-  whatsapp: z.string().optional().nullable(),
-  senha: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  nomeEmpresa: z.string()
+    .min(2, "Nome da assistência é obrigatório")
+    .max(100, "Nome da assistência muito longo")
+    .transform((val) => val.replace(/<[^>]*>?/gm, "").trim()),
+  nomeResponsavel: z.string()
+    .min(2, "Nome do responsável é obrigatório")
+    .max(100, "Nome do responsável muito longo")
+    .transform((val) => val.replace(/<[^>]*>?/gm, "").trim()),
+  email: z.string()
+    .email("E-mail inválido")
+    .max(150, "E-mail muito longo")
+    .transform((val) => val.toLowerCase().trim()),
+  whatsapp: z.string()
+    .optional()
+    .nullable()
+    .transform((val) => (val ? val.replace(/<[^>]*>?/gm, "").trim() : null)),
+  senha: z.string()
+    .min(6, "A senha deve ter no mínimo 6 caracteres")
+    .max(100, "Senha muito longa"),
+  avatarId: z.number().optional().default(1),
 })
 
 export async function POST(req: Request) {
@@ -33,7 +48,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const { nomeEmpresa, nomeResponsavel, email, whatsapp, senha } = parsed.data
+    const { nomeEmpresa, nomeResponsavel, email, whatsapp, senha, avatarId } = parsed.data
     const emailNormalizado = email.toLowerCase().trim()
 
     // 1. Checar se domínio de e-mail é descartável
@@ -81,6 +96,7 @@ export async function POST(req: Request) {
           nome: nomeResponsavel,
           email: emailNormalizado,
           senha: senhaHash,
+          avatarId: avatarId || 1,
           role: "ADMIN",
           emailVerificado: false,
           codigoVerificacao,

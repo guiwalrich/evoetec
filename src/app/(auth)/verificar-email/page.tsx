@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { AlertCircle, Loader2, CheckCircle2, Mail, RefreshCw, ArrowLeft } from "lucide-react"
+import { AlertCircle, Loader2, CheckCircle2, Mail, RefreshCw, ArrowLeft, ShieldCheck } from "lucide-react"
 
 function VerificarEmailContent() {
   const router = useRouter()
@@ -106,9 +106,10 @@ function VerificarEmailContent() {
       const json = await res.json()
 
       if (res.ok) {
-        setSucesso("E-mail verificado com sucesso! Redirecionando para o login...")
+        setSucesso("E-mail verificado com sucesso! Ativando Trial de 14 dias...")
         setTimeout(() => {
-          router.push("/login")
+          router.push("/dashboard")
+          router.refresh()
         }, 1500)
       } else {
         setErro(json.message || "Código inválido ou expirado.")
@@ -149,138 +150,146 @@ function VerificarEmailContent() {
   }
 
   return (
-    <div className="w-full max-w-md bg-zinc-900/60 border border-white/10 backdrop-blur-2xl rounded-[32px] p-8 sm:p-10 shadow-[0_30px_80px_rgba(0,0,0,0.8)] relative z-10 space-y-8 my-8 text-center">
-      {/* Header */}
-      <div className="space-y-3">
-        <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white mx-auto">
-          <Mail className="w-8 h-8 text-emerald-400" />
-        </div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-white">
-          Verifique seu E-mail<span className="text-emerald-400">.</span>
-        </h1>
-        <p className="text-xs text-zinc-400 font-light leading-relaxed">
-          Enviamos um código de 6 dígitos para o e-mail: <br />
-          <strong className="text-white">{emailInput || "seu e-mail"}</strong>
-        </p>
-      </div>
+    <div className="min-h-screen w-full bg-[#e8e8ec] text-zinc-900 selection:bg-zinc-900 selection:text-white font-sans antialiased py-8 px-4 sm:px-6 flex items-center justify-center">
+      
+      <div className="w-full max-w-md space-y-6 text-center">
 
-      {/* Caixa de Aviso Importante SPAM */}
-      <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs text-left leading-relaxed flex items-start gap-3">
-        <span className="text-base shrink-0">📩</span>
-        <div>
-          <strong>Aviso Importante:</strong> Não encontrou o código na caixa de entrada? Verifique sua pasta de <strong>SPAM</strong> ou <strong>Lixo Eletrônico</strong>.
-        </div>
-      </div>
-
-      {erro && (
-        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center gap-2 text-xs leading-relaxed">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{erro}</span>
-        </div>
-      )}
-
-      {sucesso && (
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center gap-2 text-xs font-semibold">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{sucesso}</span>
-        </div>
-      )}
-
-      {/* Formulário dos 6 Dígitos */}
-      <form onSubmit={handleVerificar} className="space-y-6">
-        <div className="flex items-center justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
-          {codigo.map((digit, index) => (
-            <input
-              key={index}
-              ref={(el) => { inputsRef.current[index] = el }}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleDigitChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              className="w-11 h-14 sm:w-12 sm:h-14 bg-zinc-950 border border-zinc-800 rounded-2xl text-center text-xl font-bold font-mono text-white focus:outline-none focus:border-emerald-400 transition-all shadow-sm"
+        {/* LOGO */}
+        <div className="space-y-2">
+          <Link href="/" className="inline-block hover:scale-105 transition-transform">
+            <img
+              src="/assets/wrldevotec.webp"
+              alt="Evo Etec Logo"
+              className="w-12 h-12 object-contain mx-auto block"
             />
-          ))}
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading || codigo.join("").length !== 6}
-          className="w-full bg-white hover:bg-zinc-200 text-black text-sm font-extrabold py-4 rounded-full transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.2)] disabled:opacity-40"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Verificando Código...</span>
-            </>
-          ) : (
-            <span>Confirmar & Ativar Trial</span>
-          )}
-        </button>
-      </form>
-
-      {/* Reenvio e Voltar */}
-      <div className="space-y-4 pt-2 border-t border-white/5">
-        <button
-          type="button"
-          onClick={handleReenviarCodigo}
-          disabled={cooldown > 0 || reenviando}
-          className="text-xs text-zinc-400 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {reenviando ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <RefreshCw className="w-3.5 h-3.5" />
-          )}
-          {cooldown > 0 ? (
-            <span>Reenviar código em {cooldown}s</span>
-          ) : (
-            <span>Reenviar novo código de 6 dígitos</span>
-          )}
-        </button>
-
-        <div>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Voltar para a tela de login</span>
           </Link>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">
+            Evo Etec ERP
+          </h1>
+          <p className="text-xs text-zinc-500 font-normal">
+            Verificação de E-mail para Ativação do Trial
+          </p>
         </div>
+
+        {/* CONTAINER DO CÓDIGO DE VERIFICAÇÃO */}
+        <div className="bg-white rounded-[36px] p-6 sm:p-8 border-4 border-white shadow-[0_20px_60px_rgba(0,0,0,0.06)] space-y-6">
+
+          <div className="space-y-2">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-900 mx-auto">
+              <Mail className="w-6 h-6 text-zinc-900" />
+            </div>
+            <h2 className="text-xl font-extrabold text-zinc-900">
+              Digite o Código de 6 Dígitos
+            </h2>
+            <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+              Enviamos um código de confirmação para:<br />
+              <strong className="text-zinc-900 font-bold">{emailInput || "seu e-mail"}</strong>
+            </p>
+          </div>
+
+          {/* CAIXA DE AVISO VISUAL ANTI-SPAM */}
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs text-left leading-relaxed flex items-start gap-3">
+            <Mail className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <strong>Aviso Importante:</strong> Não encontrou na caixa de entrada? Verifique também sua pasta de <strong>SPAM</strong> ou <strong>Lixo Eletrônico</strong>.
+            </div>
+          </div>
+
+          {erro && (
+            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 flex items-center justify-center gap-2 text-xs font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+              <span>{erro}</span>
+            </div>
+          )}
+
+          {sucesso && (
+            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center gap-2 text-xs font-semibold">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+              <span>{sucesso}</span>
+            </div>
+          )}
+
+          {/* INPUT DOS 6 DÍGITOS */}
+          <form onSubmit={handleVerificar} className="space-y-6">
+            <div className="flex items-center justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
+              {codigo.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(el) => { inputsRef.current[index] = el }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleDigitChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  className="w-11 h-14 sm:w-12 sm:h-14 bg-zinc-50 border border-zinc-200 rounded-xl text-center text-xl font-extrabold font-mono text-zinc-900 focus:outline-none focus:border-zinc-900 transition-all shadow-2xs"
+                />
+              ))}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || codigo.join("").length !== 6}
+              className="w-full bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold py-4 rounded-full transition-all flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] disabled:opacity-40"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Verificando...</span>
+                </>
+              ) : (
+                <span>Confirmar & Ativar Trial de 14 Dias</span>
+              )}
+            </button>
+          </form>
+
+          {/* TIMER DE REENVIO 60s */}
+          <div className="pt-2 border-t border-zinc-100 space-y-3">
+            <button
+              type="button"
+              onClick={handleReenviarCodigo}
+              disabled={cooldown > 0 || reenviando}
+              className="text-xs text-zinc-600 hover:text-zinc-900 transition-colors flex items-center justify-center gap-2 mx-auto disabled:opacity-50 font-semibold"
+            >
+              {reenviando ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3.5 h-3.5" />
+              )}
+              {cooldown > 0 ? (
+                <span>Reenviar código em {cooldown}s</span>
+              ) : (
+                <span>Reenviar novo código de 6 dígitos</span>
+              )}
+            </button>
+
+            <div>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 transition-colors font-medium"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Voltar para a tela de login</span>
+              </Link>
+            </div>
+          </div>
+
+        </div>
+
       </div>
+
     </div>
   )
 }
 
 export default function VerificarEmailPage() {
   return (
-    <div className="min-h-screen w-full bg-black text-white flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans selection:bg-white selection:text-black">
-      {/* Luz Radial de Fundo */}
-      <div 
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] pointer-events-none z-0"
-        style={{
-          background: "radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%)"
-        }}
-      />
-
-      {/* Grid de Fundo */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-20 z-0"
-        style={{
-          backgroundImage: "linear-gradient(to right, #27272a 1px, transparent 1px), linear-gradient(to bottom, #27272a 1px, transparent 1px)",
-          backgroundSize: "64px 64px"
-        }}
-      />
-
-      <Suspense fallback={
-        <div className="text-center text-zinc-400">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-white" />
-        </div>
-      }>
-        <VerificarEmailContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={
+      <div className="min-h-screen w-full bg-[#e8e8ec] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-zinc-800" />
+      </div>
+    }>
+      <VerificarEmailContent />
+    </Suspense>
   )
 }

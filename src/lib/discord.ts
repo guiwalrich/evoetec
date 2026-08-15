@@ -40,14 +40,14 @@ export async function enviarAlertaCadastro(
   if (!webhookUrl || webhookUrl.includes("SEU_ID")) return;
 
   const embed = {
-    title: "🎉 NOVO TESTE VERIFICADO (TRIAL 14 DIAS)!",
-    color: 0x10b981, // Verde Esmeralda
+    title: "NOVO TESTE VERIFICADO (TRIAL 14 DIAS)",
+    color: 0x10b981,
     fields: [
-      { name: "🏢 Assistência", value: empresa, inline: true },
-      { name: "👤 Responsável", value: responsavel, inline: true },
-      { name: "📧 E-mail", value: `${email} (Verificado ✅)`, inline: false },
-      { name: "📞 WhatsApp", value: whatsapp || "Não informado", inline: true },
-      { name: "📅 Trial Válido Até", value: trialAte.toLocaleDateString("pt-BR"), inline: true },
+      { name: "Empresa", value: empresa, inline: true },
+      { name: "Responsável", value: responsavel, inline: true },
+      { name: "E-mail", value: `${email} (Verificado)`, inline: false },
+      { name: "WhatsApp", value: whatsapp || "Não informado", inline: true },
+      { name: "Trial Válido Até", value: trialAte.toLocaleDateString("pt-BR"), inline: true },
     ],
     timestamp: new Date().toISOString(),
   };

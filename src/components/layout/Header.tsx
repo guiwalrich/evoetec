@@ -175,8 +175,13 @@ export function Header({ setMobileOpen }: HeaderProps) {
 
         <div className="h-6 w-px bg-zinc-200" />
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-sm shadow-sm">
-            {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : <User className="w-4 h-4" strokeWidth={1.5} />}
+          <div className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-300 overflow-hidden flex items-center justify-center shadow-sm shrink-0">
+            <img 
+              src={`/assets/avatars/avatar_${(session?.user as any)?.avatarId || 1}.png`}
+              alt="Avatar Pixel Art"
+              className="w-full h-full object-cover"
+              style={{ imageRendering: "pixelated" }}
+            />
           </div>
           <div className="hidden md:block text-left">
             <span className="block text-sm font-bold text-zinc-900 leading-tight">

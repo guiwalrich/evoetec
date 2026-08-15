@@ -2,8 +2,25 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { ClipboardList, Users, DollarSign, PackageCheck, Loader2, ArrowRight, ShoppingCart } from "lucide-react"
+import { 
+  ClipboardList, 
+  Users, 
+  DollarSign, 
+  PackageCheck, 
+  Loader2, 
+  ArrowRight, 
+  ShoppingCart,
+  Wrench,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  TrendingUp,
+  Plus,
+  HelpCircle,
+  MessageSquare,
+} from "lucide-react"
 
 interface DashboardData {
   metrics: {
@@ -30,9 +47,13 @@ interface DashboardData {
   }>
 }
 
-export default function DashboardPage() {
+export default function ReferenceStyleDashboardPage() {
+  const { data: session } = useSession()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const avatarId = (session?.user as any)?.avatarId || 1
+  const userName = session?.user?.name || "Técnico"
 
   useEffect(() => {
     async function carregarDashboard() {
@@ -54,7 +75,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center text-zinc-400">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-900 mb-2" strokeWidth={1.5} />
+        <Loader2 className="w-8 h-8 animate-spin text-zinc-900" strokeWidth={1.5} />
       </div>
     )
   }
@@ -66,189 +87,181 @@ export default function DashboardPage() {
     pecasEstoque: 0,
   }
 
+  const ultimasOS = data?.ultimasOS || []
+
   return (
-    <div className="space-y-8">
-      {/* Header da Página */}
-      <div>
-        <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight font-sans">
-          Visão Geral
-        </h1>
-        <p className="text-sm text-zinc-500 mt-1 font-light">
-          Bem-vindo ao <span className="text-zinc-900 font-semibold">Evo Etec ERP</span>. Acompanhe a demanda e o desempenho da sua assistência em tempo real.
-        </p>
+    <div className="space-y-8 font-sans">
+      
+      {/* ========================================================================= */}
+      {/* 1. SEÇÃO DE SAUDAÇÃO COM O AVATAR PIXEL ART DO USUÁRIO (MODELO REFERÊNCIA) */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        
+        {/* Card do Usuário com o Avatar em Destaque */}
+        <div className="lg:col-span-8 bg-white rounded-[32px] p-6 sm:p-8 border border-zinc-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden">
+          
+          <div className="space-y-4 text-center sm:text-left z-10">
+            <div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight">
+                Olá, sou o {userName}!
+              </h1>
+              <p className="text-xs sm:text-sm text-zinc-500 font-normal mt-1 leading-relaxed">
+                Como posso ajudar a bancada da sua assistência hoje?
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1">
+              <Link
+                href="/ordens-servico/nova"
+                className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold px-5 py-3 rounded-full transition-all flex items-center gap-2 shadow-sm hover:scale-105"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Nova Ordem de Serviço</span>
+              </Link>
+              <Link
+                href="/ordens-servico"
+                className="bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold px-5 py-3 rounded-full transition-all border border-zinc-200"
+              >
+                Ver Todas as OS
+              </Link>
+            </div>
+          </div>
+
+          {/* Destaque do Avatar Pixel Art do Usuário no Card */}
+          <div className="relative shrink-0 z-10">
+            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-zinc-100 border-4 border-zinc-200/80 overflow-hidden shadow-md flex items-center justify-center p-2">
+              <img
+                src={`/assets/avatars/avatar_${avatarId}.png`}
+                alt={`Avatar Pixel Art ${avatarId}`}
+                className="w-full h-full object-cover"
+                style={{ imageRendering: "pixelated" }}
+              />
+            </div>
+            <span className="absolute bottom-1 right-1 bg-emerald-500 text-white text-[10px] font-mono px-2 py-0.5 rounded-full font-bold shadow-2xs border border-white">
+              Bancada #01
+            </span>
+          </div>
+
+        </div>
+
+        {/* Métrica Rápida Superior Direita (Modelo Referência: Jobs Completed / Jobs Inprogress) */}
+        <div className="lg:col-span-4 grid grid-cols-2 gap-4">
+          
+          <div className="bg-white rounded-[28px] p-6 border border-zinc-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4">
+            <span className="text-zinc-400 font-mono text-[10px] uppercase font-bold">OS Abertas</span>
+            <div>
+              <div className="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight">
+                {metrics.osAbertas.toString().padStart(2, "0")}
+              </div>
+              <span className="text-[11px] text-amber-600 font-semibold mt-1 block">Em bancada</span>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-[28px] p-6 border border-zinc-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4">
+            <span className="text-zinc-400 font-mono text-[10px] uppercase font-bold">Clientes Ativos</span>
+            <div>
+              <div className="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight">
+                {metrics.clientesAtivos.toString().padStart(2, "0")}
+              </div>
+              <span className="text-[11px] text-emerald-600 font-semibold mt-1 block">Base cadastrada</span>
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
-      {/* Cards de Métricas Principais (Soft UI Glassmorphism Yin-Yang Contrast) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-        {/* Card 1: Receita Total (Card Destaque Preto Yin-Yang) */}
-        <div className="bg-[#18181b] text-white rounded-[32px] p-6 flex items-center justify-between border border-zinc-800 transition-all hover:scale-[1.01]">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-wider text-zinc-400 block mb-1">
-              Receita Total
-            </span>
-            <span className="text-3xl font-extrabold text-white tracking-tight block">
-              R$ {metrics.receitaTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-            <span className="text-[11px] text-zinc-400 font-light block mt-1">
-              Vendas e serviços liquidados
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-white shrink-0">
-            <DollarSign className="w-6 h-6" strokeWidth={1.5} />
-          </div>
-        </div>
-
-        {/* Card 2: OS Abertas (Card Branco Soft Shadow) */}
-        <div className="bg-white text-zinc-900 rounded-[32px] p-6 flex items-center justify-between border border-zinc-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:scale-[1.01]">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-wider text-zinc-400 block mb-1">
-              OS Abertas
-            </span>
-            <span className="text-3xl font-extrabold text-zinc-900 tracking-tight block">
-              {metrics.osAbertas}
-            </span>
-            <span className="text-[11px] text-zinc-500 font-light block mt-1">
-              Aguardando atendimento
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-800 shrink-0">
-            <ClipboardList className="w-6 h-6" strokeWidth={1.5} />
-          </div>
-        </div>
-
-        {/* Card 3: Clientes Ativos (Card Branco Soft Shadow) */}
-        <div className="bg-white text-zinc-900 rounded-[32px] p-6 flex items-center justify-between border border-zinc-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:scale-[1.01]">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-wider text-zinc-400 block mb-1">
-              Clientes Ativos
-            </span>
-            <span className="text-3xl font-extrabold text-zinc-900 tracking-tight block">
-              {metrics.clientesAtivos}
-            </span>
-            <span className="text-[11px] text-zinc-500 font-light block mt-1">
-              Cadastrados no sistema
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-800 shrink-0">
-            <Users className="w-6 h-6" strokeWidth={1.5} />
-          </div>
-        </div>
-
-        {/* Card 4: Peças em Estoque (Card Branco Soft Shadow) */}
-        <div className="bg-white text-zinc-900 rounded-[32px] p-6 flex items-center justify-between border border-zinc-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:scale-[1.01]">
-          <div>
-            <span className="text-xs font-medium uppercase tracking-wider text-zinc-400 block mb-1">
-              Peças em Estoque
-            </span>
-            <span className="text-3xl font-extrabold text-zinc-900 tracking-tight block">
-              {metrics.pecasEstoque}
-            </span>
-            <span className="text-[11px] text-zinc-500 font-light block mt-1">
-              Unidades no estoque
-            </span>
-          </div>
-          <div className="w-12 h-12 rounded-full bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-800 shrink-0">
-            <PackageCheck className="w-6 h-6" strokeWidth={1.5} />
-          </div>
-        </div>
-      </div>
-
-      {/* Grid de Atividades Recentes com Espaçamento Generoso */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-        {/* Painel: Últimas OS */}
-        <div className="bg-white text-zinc-900 rounded-[32px] p-6 sm:p-8 border border-zinc-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
-          <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-            <h3 className="text-base font-bold text-zinc-900 flex items-center gap-2.5">
-              <ClipboardList className="w-5 h-5 text-zinc-700" strokeWidth={1.5} />
-              <span>Ordens de Serviço Recentes</span>
-            </h3>
-            <Link
-              href="/ordens-servico"
-              className="text-xs text-zinc-500 hover:text-black font-semibold flex items-center gap-1 transition-colors px-3 py-1.5 rounded-full hover:bg-zinc-100"
-            >
-              Ver todas <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} />
+      {/* ========================================================================= */}
+      {/* 2. CONTEÚDO PRINCIPAL (LISTA DE REPAROS + ESTATÍSTICAS DA BANCADA) */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Coluna Esquerda: Aparelhos em Bancada (Modelo Referência: Projects Completed List) */}
+        <div className="lg:col-span-8 space-y-4">
+          
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-zinc-900 tracking-tight">
+              Últimas Ordens de Serviço
+            </h2>
+            <Link href="/ordens-servico" className="text-xs text-zinc-500 hover:text-zinc-900 font-semibold transition-colors">
+              Ver todas →
             </Link>
           </div>
 
-          <div className="divide-y divide-zinc-100">
-            {data?.ultimasOS.length === 0 ? (
-              <p className="text-sm text-zinc-400 py-6 text-center font-light">Nenhuma OS registrada ainda.</p>
+          <div className="space-y-3">
+            {ultimasOS.length === 0 ? (
+              <div className="bg-white rounded-[24px] p-8 border border-zinc-200/80 text-center text-xs text-zinc-500">
+                Nenhuma Ordem de Serviço aberta no momento. Clique acima para iniciar o primeiro atendimento!
+              </div>
             ) : (
-              data?.ultimasOS.map((os) => {
-                const isConcluido = os.status.toUpperCase().includes("CONCLU") || os.status.toUpperCase().includes("ENTREGUE")
-                return (
-                  <div key={os.id} className="py-3.5 flex items-center justify-between text-sm hover:bg-zinc-50 transition-all rounded-2xl px-3">
+              ultimasOS.map((os) => (
+                <div 
+                  key={os.id} 
+                  className="bg-white rounded-[24px] p-5 border border-zinc-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-zinc-100 flex items-center justify-center text-zinc-900 font-mono text-xs font-bold shrink-0 border border-zinc-200">
+                      OS
+                    </div>
                     <div>
-                      <Link
-                        href={`/ordens-servico/${os.id}`}
-                        className="font-bold text-zinc-900 hover:text-black block"
-                      >
-                        {os.numero} — {os.dispositivo}
-                      </Link>
-                      <span className="text-xs text-zinc-500 block font-light mt-0.5">Cliente: {os.cliente.nome}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className={`text-[11px] px-3 py-1 rounded-full font-medium inline-block mb-1 ${
-                        isConcluido
-                          ? "bg-black text-white"
-                          : "bg-zinc-100 text-zinc-600 border border-zinc-200/80"
-                      }`}>
-                        {os.status}
-                      </span>
-                      <span className="text-xs font-bold text-zinc-900 block">
-                        R$ {Number(os.valorTotal).toFixed(2)}
-                      </span>
+                      <div className="font-extrabold text-sm text-zinc-900">
+                        {os.dispositivo}
+                      </div>
+                      <div className="text-xs text-zinc-500 font-normal">
+                        Cliente: {os.cliente?.nome || "Não informado"} · #{os.numero}
+                      </div>
                     </div>
                   </div>
-                )
-              })
-            )}
-          </div>
-        </div>
 
-        {/* Painel: Últimas Vendas (PDV) */}
-        <div className="bg-white text-zinc-900 rounded-[32px] p-6 sm:p-8 border border-zinc-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
-          <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-            <h3 className="text-base font-bold text-zinc-900 flex items-center gap-2.5">
-              <ShoppingCart className="w-5 h-5 text-zinc-700" strokeWidth={1.5} />
-              <span>Vendas Recentes (PDV)</span>
-            </h3>
-            <Link
-              href="/vendas"
-              className="text-xs text-zinc-500 hover:text-black font-semibold flex items-center gap-1 transition-colors px-3 py-1.5 rounded-full hover:bg-zinc-100"
-            >
-              Ver histórico <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} />
-            </Link>
-          </div>
-
-          <div className="divide-y divide-zinc-100">
-            {data?.ultimasVendas.length === 0 ? (
-              <p className="text-sm text-zinc-400 py-6 text-center font-light">Nenhuma venda registrada ainda.</p>
-            ) : (
-              data?.ultimasVendas.map((v) => (
-                <div key={v.id} className="py-3.5 flex items-center justify-between text-sm hover:bg-zinc-50 transition-all rounded-2xl px-3">
-                  <div>
-                    <Link href={`/vendas/${v.id}`} className="font-bold text-zinc-900 hover:text-black block">
-                      Venda #{v.numero}
+                  <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-zinc-100">
+                    <span className="text-xs font-extrabold text-emerald-600 font-mono">
+                      R$ {os.valorTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
+                    <Link
+                      href={`/ordens-servico/${os.id}`}
+                      className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold px-4 py-2 rounded-full transition-all shadow-2xs hover:scale-105"
+                    >
+                      Ver Ordem
                     </Link>
-                    <span className="text-xs text-zinc-500 block font-light mt-0.5">
-                      {v.cliente?.nome || "Cliente Avulso (Balcão)"}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-sm font-extrabold text-zinc-900 block">
-                      R$ {Number(v.valorTotal).toFixed(2)}
-                    </span>
-                    <span className="text-[11px] text-zinc-400 block font-light mt-0.5">
-                      {new Date(v.dataVenda).toLocaleDateString("pt-BR")}
-                    </span>
                   </div>
                 </div>
               ))
             )}
           </div>
+
         </div>
+
+        {/* Coluna Direita: Estatísticas & Bloco de Suporte (Modelo Referência: My Statistics & Work With Me) */}
+        <div className="lg:col-span-4 space-y-6">
+          
+          {/* Card Estatísticas */}
+          <div className="bg-white rounded-[32px] p-6 border border-zinc-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <h3 className="font-bold text-sm text-zinc-900">Resumo Financeiro</h3>
+              <span className="text-[10px] font-mono text-zinc-400">Tempo Real</span>
+            </div>
+
+            <div className="space-y-3">
+              <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200/80 space-y-1">
+                <span className="text-[10px] font-mono uppercase text-zinc-400 font-bold block">Faturamento Total Liquidados</span>
+                <div className="text-2xl font-extrabold text-emerald-600 font-mono">
+                  R$ {metrics.receitaTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+
+              <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200/80 space-y-1">
+                <span className="text-[10px] font-mono uppercase text-zinc-400 font-bold block">Peças Cadastradas</span>
+                <div className="text-xl font-extrabold text-zinc-900 font-mono">
+                  {metrics.pecasEstoque} itens em estoque
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
+
     </div>
   )
 }

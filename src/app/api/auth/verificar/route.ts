@@ -5,8 +5,8 @@ import { enviarAlertaCadastro } from "@/lib/discord"
 import { z } from "zod"
 
 const verificarSchema = z.object({
-  email: z.string().email("E-mail inválido"),
-  codigo: z.string().length(6, "O código deve conter exatamente 6 dígitos"),
+  email: z.string().email("E-mail inválido").transform((val) => val.toLowerCase().trim()),
+  codigo: z.string().length(6, "O código deve conter exatamente 6 dígitos").transform((val) => val.replace(/\D/g, "").trim()),
 })
 
 export async function POST(req: Request) {

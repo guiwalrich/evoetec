@@ -129,11 +129,11 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
           })}
         </nav>
 
-        {/* Botão de Logout */}
-        <div className="p-4 border-t border-zinc-100">
+        {/* Perfil & Botão de Logout */}
+        <div className="p-4 border-t border-zinc-100 space-y-3">
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
           >
             <LogOut className="w-4 h-4" strokeWidth={1.5} />
             <span>Encerrar Sessão</span>
