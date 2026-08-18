@@ -50,7 +50,9 @@ export default function FornecedoresPage() {
   const [cpfCnpj, setCpfCnpj] = useState("")
   const [telefone, setTelefone] = useState("")
   const [email, setEmail] = useState("")
+  const [cep, setCep] = useState("")
   const [endereco, setEndereco] = useState("")
+  const [buscandoCep, setBuscandoCep] = useState(false)
 
   const carregarFornecedores = useCallback(async () => {
     setLoading(true)
@@ -79,6 +81,7 @@ export default function FornecedoresPage() {
     setCpfCnpj("")
     setTelefone("")
     setEmail("")
+    setCep("")
     setEndereco("")
     setErroForm("")
     setModalOpen(true)
@@ -90,6 +93,7 @@ export default function FornecedoresPage() {
     setCpfCnpj(f.cpfCnpj || "")
     setTelefone(f.telefone || "")
     setEmail(f.email || "")
+    setCep("")
     setEndereco(f.endereco || "")
     setErroForm("")
     setModalOpen(true)
@@ -107,13 +111,21 @@ export default function FornecedoresPage() {
     }
   }
 
-  const handleBlurCep = async (valorEndereco: string) => {
-    const clean = valorEndereco.replace(/\D/g, "")
-    if (clean.length === 8) {
-      const info = await buscarCep(clean)
+  const handleCepChange = async (valor: string) => {
+    const limpo = valor.replace(/\D/g, "")
+    let formatado = limpo
+    if (limpo.length <= 8) {
+      if (limpo.length > 5) formatado = `${limpo.slice(0, 5)}-${limpo.slice(5)}`
+      setCep(formatado)
+    }
+
+    if (limpo.length === 8) {
+      setBuscandoCep(true)
+      const info = await buscarCep(limpo)
       if (info) {
         setEndereco(info.enderecoCompleto)
       }
+      setBuscandoCep(false)
     }
   }
 
@@ -371,14 +383,41 @@ export default function FornecedoresPage() {
                 />
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-1">
+                  <label className="block text-xs font-medium text-zinc-600 mb-1 ml-2 flex items-center justify-between">
+                    <span>Buscar por CEP</span>
+                    {buscandoCep && <span className="text-[10px] text-zinc-500 font-mono animate-pulse">Buscando...</span>}
+                  </label>
+                  <input
+                    type="text"
+                    value={cep}
+                    onChange={(e) => handleCepChange(e.target.value)}
+                    placeholder="00000-000"
+                    maxLength={9}
+                    className="w-full bg-white border border-zinc-200/80 rounded-full px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-zinc-800"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-zinc-600 mb-1 ml-2">E-mail de Contato</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="vendas@fornecedor.com"
+                    className="w-full bg-white border border-zinc-200/80 rounded-full px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-zinc-800"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-xs font-medium text-zinc-600 mb-1 ml-2">Endereço Completo ou CEP</label>
+                <label className="block text-xs font-medium text-zinc-600 mb-1 ml-2">Endereço Completo (Rua, Número, Bairro, Cidade - UF)</label>
                 <input
                   type="text"
                   value={endereco}
                   onChange={(e) => setEndereco(e.target.value)}
-                  onBlur={(e) => handleBlurCep(e.target.value)}
-                  placeholder="Bipe/digite CEP ou informe o Endereço (Rua, Número, Cidade, Estado)"
+                  placeholder="Rua, Número, Bairro, Cidade - UF"
                   className="w-full bg-white border border-zinc-200/80 rounded-full px-4 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-zinc-800"
                 />
               </div>

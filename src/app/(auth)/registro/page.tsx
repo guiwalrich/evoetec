@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { AlertCircle, Loader2, ArrowRight, Eye, EyeOff, ShieldCheck, CheckCircle2, User } from "lucide-react"
+import { buscarCep } from "@/lib/integrations/viacep"
 
 const USER_AVATARS = Array.from({ length: 16 }, (_, i) => i + 1)
 
@@ -19,10 +20,31 @@ function RegistroFormContent() {
   const [nomeResponsavel, setNomeResponsavel] = useState("")
   const [email, setEmail] = useState("")
   const [whatsapp, setWhatsapp] = useState("")
+  const [cep, setCep] = useState("")
+  const [endereco, setEndereco] = useState("")
+  const [buscandoCep, setBuscandoCep] = useState(false)
   const [senha, setSenha] = useState("")
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [erro, setErro] = useState("")
   const [loading, setLoading] = useState(false)
+
+  const handleCepChange = async (valor: string) => {
+    const limpo = valor.replace(/\D/g, "")
+    let formatado = limpo
+    if (limpo.length <= 8) {
+      if (limpo.length > 5) formatado = `${limpo.slice(0, 5)}-${limpo.slice(5)}`
+      setCep(formatado)
+    }
+
+    if (limpo.length === 8) {
+      setBuscandoCep(true)
+      const info = await buscarCep(limpo)
+      if (info) {
+        setEndereco(info.enderecoCompleto)
+      }
+      setBuscandoCep(false)
+    }
+  }
 
   // Mascara simples para WhatsApp
   const handleWhatsappChange = (val: string) => {
@@ -153,6 +175,34 @@ function RegistroFormContent() {
                     placeholder="Ex: Lucas Silva"
                     value={nomeResponsavel}
                     onChange={(e) => setNomeResponsavel(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200/90 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5 sm:col-span-1">
+                  <label className="text-xs font-semibold text-zinc-700 flex items-center justify-between">
+                    <span>CEP da Loja</span>
+                    {buscandoCep && <span className="text-[10px] text-zinc-500 font-mono animate-pulse">Buscando...</span>}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="00000-000"
+                    maxLength={9}
+                    value={cep}
+                    onChange={(e) => handleCepChange(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200/90 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-semibold text-zinc-700 block">Endereço da Assistência</label>
+                  <input
+                    type="text"
+                    placeholder="Rua, Número, Bairro, Cidade - UF"
+                    value={endereco}
+                    onChange={(e) => setEndereco(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200/90 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 transition-all"
                   />
                 </div>

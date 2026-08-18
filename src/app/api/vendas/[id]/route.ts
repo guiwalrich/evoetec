@@ -21,6 +21,7 @@ export async function GET(
     const venda = await prisma.venda.findFirst({
       where: tenant.whereTenant({ id }),
       include: {
+        empresa: true,
         cliente: true,
         vendedor: { select: { id: true, nome: true } },
         itens: { include: { produto: true } },

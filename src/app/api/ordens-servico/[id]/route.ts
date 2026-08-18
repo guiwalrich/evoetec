@@ -22,6 +22,7 @@ export async function GET(
     const os = await prisma.ordemServico.findFirst({
       where: tenant.whereTenant({ id }),
       include: {
+        empresa: true,
         cliente: true,
         tecnico: { select: { id: true, nome: true, email: true } },
         itens: { include: { produto: true } },

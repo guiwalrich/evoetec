@@ -102,7 +102,14 @@ export async function GET(req: Request) {
       }
     })
 
+    // Buscar dados da empresa para o cabeçalho oficial do relatório
+    const empresaInfo = await prisma.empresa.findUnique({
+      where: { id: session.user.empresaId },
+      select: { nomeFantasia: true, cnpj: true, telefone: true, endereco: true },
+    })
+
     return NextResponse.json({
+      empresa: empresaInfo,
       vendas: {
         totalFaturado: Number(totalVendas._sum.valorTotal || 0),
         quantidade: totalVendas._count,
