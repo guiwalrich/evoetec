@@ -62,10 +62,26 @@ export default function RelatoriosPage() {
         const res = await fetch(url)
         if (res.ok) {
           const json = await res.json()
-          setDados(json)
+          setDados({
+            empresa: json.empresa || undefined,
+            vendas: {
+              totalFaturado: Number(json.vendas?.totalFaturado || 0),
+              quantidade: Number(json.vendas?.quantidade || 0),
+            },
+            ordensServico: {
+              totalFaturado: Number(json.ordensServico?.totalFaturado || 0),
+              quantidade: Number(json.ordensServico?.quantidade || 0),
+              porStatus: json.ordensServico?.porStatus || [],
+            },
+            estoqueCritico: json.estoqueCritico || [],
+            topProdutos: json.topProdutos || [],
+          })
+        } else {
+          setDados(null)
         }
       } catch (err) {
         console.error("Erro ao carregar relatórios:", err)
+        setDados(null)
       } finally {
         setLoading(false)
       }
@@ -96,7 +112,7 @@ export default function RelatoriosPage() {
     )
   }
 
-  const faturamentoTotal = (dados?.vendas?.totalFaturado || 0) + (dados?.ordensServico?.totalFaturado || 0)
+  const faturamentoTotal = Number(dados?.vendas?.totalFaturado || 0) + Number(dados?.ordensServico?.totalFaturado || 0)
 
   return (
     <>
@@ -313,7 +329,7 @@ export default function RelatoriosPage() {
               </div>
             </div>
             <span className="text-3xl font-extrabold text-white block">
-              R$ {dados?.vendas.totalFaturado.toFixed(2)}
+              R$ {Number(dados?.vendas?.totalFaturado || 0).toFixed(2)}
             </span>
             <span className="text-xs text-zinc-400 mt-1 block font-light">
               {dados?.vendas.quantidade} vendas concluídas
@@ -331,7 +347,7 @@ export default function RelatoriosPage() {
               </div>
             </div>
             <span className="text-3xl font-extrabold text-zinc-900 block">
-              R$ {dados?.ordensServico.totalFaturado.toFixed(2)}
+              R$ {Number(dados?.ordensServico?.totalFaturado || 0).toFixed(2)}
             </span>
             <span className="text-xs text-zinc-500 mt-1 block font-light">
               {dados?.ordensServico.quantidade} ordens de serviço registradas

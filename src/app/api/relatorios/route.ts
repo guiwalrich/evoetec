@@ -78,6 +78,7 @@ export async function GET(req: Request) {
       prisma.vendaItem.groupBy({
         by: ["produtoId"],
         where: {
+          produtoId: { not: undefined },
           venda: {
             empresaId: session.user.empresaId,
             deletedAt: null,
@@ -103,8 +104,8 @@ export async function GET(req: Request) {
       const prod = detalhesProdutos.find((d) => d.id === item.produtoId)
       return {
         nome: prod?.nome || "Produto Desconhecido",
-        quantidadeTotal: item._sum.quantidade || 0,
-        valorTotal: item._sum.valorTotal || 0,
+        quantidadeTotal: item._sum?.quantidade || 0,
+        valorTotal: item._sum?.valorTotal || 0,
       }
     })
 
