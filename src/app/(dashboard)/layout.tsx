@@ -19,9 +19,9 @@ export default function DashboardLayout({
   return (
     <NextAuthProvider>
       <AssinaturaGuard>
-        <div className="min-h-screen bg-[#f4f4f6] bg-[radial-gradient(#e4e4e7_1px,transparent_1px)] [background-size:24px_24px] p-3 sm:p-6 text-zinc-900 font-sans selection:bg-black selection:text-white flex items-center justify-center">
+        <div className="min-h-screen bg-[#f4f4f6] dark:bg-[#09090b] bg-[radial-gradient(#e4e4e7_1px,transparent_1px)] dark:bg-[radial-gradient(#1c1c1f_1px,transparent_1px)] [background-size:24px_24px] p-3 sm:p-6 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-black selection:text-white flex items-center justify-center transition-colors duration-200">
           {/* Shell Flutuante Monochromatic Glassmorphism (Soft UI 40px) */}
-          <div className="w-full max-w-[1600px] min-h-[calc(100vh-3rem)] bg-white/50 backdrop-blur-2xl border border-white/80 shadow-[0_20px_60px_rgba(0,0,0,0.05)] rounded-[40px] flex overflow-hidden relative">
+          <div className="w-full max-w-[1600px] min-h-[calc(100vh-3rem)] bg-white/50 dark:bg-zinc-900/60 backdrop-blur-2xl border border-white/80 dark:border-zinc-800/80 shadow-[0_20px_60px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.3)] rounded-[40px] flex overflow-hidden relative transition-colors duration-200">
             {/* Sidebar Flutuante */}
             <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 

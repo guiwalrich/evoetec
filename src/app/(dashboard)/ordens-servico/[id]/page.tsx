@@ -12,9 +12,7 @@ import {
   Printer,
   Loader2,
   ShieldCheck,
-  MessageCircle,
-  Sun,
-  Moon
+  MessageCircle
 } from "lucide-react"
 
 interface OSDetalhe {
@@ -73,23 +71,6 @@ export default function DetalheOrdemServicoPage({
 
   const [novoStatus, setNovoStatus] = useState<string>("")
   const [atualizandoStatus, setAtualizandoStatus] = useState(false)
-  const [tema, setTema] = useState<"dark" | "light">("light")
-
-  useEffect(() => {
-    const temaSalvo = (localStorage.getItem("app_theme") || localStorage.getItem("os_tema_preferencia")) as "dark" | "light" | null
-    if (temaSalvo) setTema(temaSalvo)
-  }, [])
-
-  const alternarTema = (novoTema: "dark" | "light") => {
-    setTema(novoTema)
-    localStorage.setItem("app_theme", novoTema)
-    localStorage.setItem("os_tema_preferencia", novoTema)
-    if (novoTema === "dark") {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-  }
 
   const carregarOS = async () => {
     try {
@@ -151,26 +132,24 @@ export default function DetalheOrdemServicoPage({
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center text-slate-500">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-2" />
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-zinc-400 dark:text-zinc-500 mb-2" />
       </div>
     )
   }
 
   if (!os) {
     return (
-      <div className="text-center py-12 text-slate-400">
+      <div className="text-center py-12 text-zinc-400 dark:text-zinc-500">
         Ordem de Serviço não encontrada.
       </div>
     )
   }
 
-  const isDark = tema === "dark"
-
   return (
     <>
       {/* ========================================================================= */}
-      {/* 📄 LAYOUT EXCLUSIVO DE IMPRESSÃO (A4 / COMPROVANTE OFICIAL)               */}
+      {/* LAYOUT EXCLUSIVO DE IMPRESSÃO (A4 / COMPROVANTE OFICIAL)                  */}
       {/* ========================================================================= */}
       <div className="hidden print:block font-sans text-black p-4 max-w-4xl mx-auto space-y-6 bg-white">
         {/* Cabeçalho da Loja */}
@@ -268,7 +247,7 @@ export default function DetalheOrdemServicoPage({
       </div>
 
       {/* ========================================================================= */}
-      {/* 💻 INTERFACE DE TELA INTERATIVA (COM SELETOR DE TEMA DARK / LIGHT)         */}
+      {/* INTERFACE DE TELA INTERATIVA                                              */}
       {/* ========================================================================= */}
       <div className="max-w-4xl mx-auto space-y-6 print:hidden page-fade-in">
         {/* Header */}
@@ -276,20 +255,18 @@ export default function DetalheOrdemServicoPage({
           <div className="flex items-center gap-4">
             <Link
               href="/ordens-servico"
-              className={isDark
-                ? "p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                : "p-2.5 rounded-xl bg-white border border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 shadow-sm transition-colors"}
+              className="p-2.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 shadow-sm transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className={isDark ? "text-2xl font-bold text-white tracking-tight flex items-center gap-3" : "text-2xl font-bold text-zinc-900 tracking-tight flex items-center gap-3"}>
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
                 <span>{os.numero}</span>
-                <span className={isDark ? "text-xs px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold" : "text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-semibold"}>
+                <span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 font-semibold">
                   {os.status}
                 </span>
               </h1>
-              <p className={isDark ? "text-sm text-slate-400 mt-0.5" : "text-sm text-zinc-500 mt-0.5"}>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
                 Criada em {new Date(os.createdAt).toLocaleDateString("pt-BR")}
               </p>
             </div>
@@ -304,9 +281,7 @@ export default function DetalheOrdemServicoPage({
             </button>
             <button
               onClick={() => window.print()}
-              className={isDark
-                ? "inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium px-4 py-2.5 rounded-xl transition-all text-sm shrink-0 cursor-pointer"
-                : "inline-flex items-center justify-center gap-2 bg-black hover:bg-zinc-800 text-white font-medium px-4 py-2.5 rounded-xl transition-all text-sm shrink-0 cursor-pointer shadow-sm"}
+              className="inline-flex items-center justify-center gap-2 bg-black dark:bg-zinc-700 hover:bg-zinc-800 dark:hover:bg-zinc-600 text-white font-medium px-4 py-2.5 rounded-xl transition-all text-sm shrink-0 cursor-pointer shadow-sm"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir OS</span>
@@ -315,10 +290,10 @@ export default function DetalheOrdemServicoPage({
         </div>
 
         {/* Card de Alteração Direta de Status */}
-        <div className={isDark ? "bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm" : "bg-white border border-zinc-200/90 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm"}>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm transition-colors duration-200">
           <div>
-            <h3 className={isDark ? "text-sm font-semibold text-white" : "text-sm font-bold text-zinc-900"}>Alterar Status da Ordem de Serviço</h3>
-            <p className={isDark ? "text-xs text-slate-400 mt-0.5" : "text-xs text-zinc-500 mt-0.5"}>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Alterar Status da Ordem de Serviço</h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               Ao salvar, o novo status é registrado automaticamente na linha do tempo de auditoria.
             </p>
           </div>
@@ -326,7 +301,7 @@ export default function DetalheOrdemServicoPage({
             <select
               value={novoStatus}
               onChange={(e) => setNovoStatus(e.target.value)}
-              className={isDark ? "bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-blue-500" : "bg-zinc-50 border border-zinc-300 rounded-xl px-3.5 py-2 text-sm text-zinc-900 focus:outline-none focus:border-zinc-800"}
+              className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-800 dark:focus:border-zinc-500"
             >
               <option value="RECEBIDA">RECEBIDA</option>
               <option value="EM_ANALISE">EM ANÁLISE</option>
@@ -352,54 +327,54 @@ export default function DetalheOrdemServicoPage({
         {/* Grid de Informações */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Cliente */}
-          <div className={isDark ? "bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3" : "bg-white border border-zinc-200/90 rounded-2xl p-6 space-y-3 shadow-sm"}>
-            <h3 className={isDark ? "text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2" : "text-sm font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2"}>
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 space-y-3 shadow-sm transition-colors duration-200">
+            <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-2">
               <User className="w-4 h-4 text-blue-500" />
               <span>Dados do Cliente</span>
             </h3>
-            <p className={isDark ? "text-lg font-bold text-white" : "text-lg font-extrabold text-zinc-900"}>{os.cliente.nome}</p>
-            {os.cliente.telefone && <p className={isDark ? "text-sm text-slate-300" : "text-sm text-zinc-700"}>Tel: {os.cliente.telefone}</p>}
-            {os.cliente.email && <p className={isDark ? "text-sm text-slate-400" : "text-sm text-zinc-600"}>Email: {os.cliente.email}</p>}
-            {os.cliente.endereco && <p className={isDark ? "text-xs text-slate-400" : "text-xs text-zinc-500"}>Endereço: {os.cliente.endereco}</p>}
+            <p className="text-lg font-extrabold text-zinc-900 dark:text-white">{os.cliente.nome}</p>
+            {os.cliente.telefone && <p className="text-sm text-zinc-700 dark:text-zinc-300">Tel: {os.cliente.telefone}</p>}
+            {os.cliente.email && <p className="text-sm text-zinc-600 dark:text-zinc-400">Email: {os.cliente.email}</p>}
+            {os.cliente.endereco && <p className="text-xs text-zinc-500 dark:text-zinc-400">Endereço: {os.cliente.endereco}</p>}
           </div>
 
           {/* Aparelho */}
-          <div className={isDark ? "bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3" : "bg-white border border-zinc-200/90 rounded-2xl p-6 space-y-3 shadow-sm"}>
-            <h3 className={isDark ? "text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2" : "text-sm font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2"}>
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 space-y-3 shadow-sm transition-colors duration-200">
+            <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-2">
               <Smartphone className="w-4 h-4 text-blue-500" />
               <span>Dispositivo</span>
             </h3>
-            <p className={isDark ? "text-lg font-bold text-white" : "text-lg font-extrabold text-zinc-900"}>{os.dispositivo}</p>
-            <p className={isDark ? "text-sm text-slate-300" : "text-sm text-zinc-700"}>
+            <p className="text-lg font-extrabold text-zinc-900 dark:text-white">{os.dispositivo}</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300">
               {[os.marca, os.modelo].filter(Boolean).join(" - ") || "Sem modelo"}
             </p>
-            {os.imei && <p className={isDark ? "text-xs text-slate-400" : "text-xs text-zinc-500"}>IMEI / Nº Série: {os.imei}</p>}
+            {os.imei && <p className="text-xs text-zinc-500 dark:text-zinc-400">IMEI / Nº Série: {os.imei}</p>}
           </div>
         </div>
 
         {/* Defeito e Valores */}
-        <div className={isDark ? "bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4" : "bg-white border border-zinc-200/90 rounded-2xl p-6 space-y-4 shadow-sm"}>
-          <h3 className={isDark ? "text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2" : "text-sm font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2"}>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 space-y-4 shadow-sm transition-colors duration-200">
+          <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-2">
             <Wrench className="w-4 h-4 text-blue-500" />
             <span>Defeito e Diagnóstico</span>
           </h3>
           <div>
-            <span className={isDark ? "text-xs text-slate-500 block" : "text-xs text-zinc-500 font-medium block"}>Defeito Relatado:</span>
-            <p className={isDark ? "text-sm text-slate-200 mt-1" : "text-sm text-zinc-800 font-medium mt-1"}>{os.defeitoRelatado}</p>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium block">Defeito Relatado:</span>
+            <p className="text-sm text-zinc-800 dark:text-zinc-200 font-medium mt-1">{os.defeitoRelatado}</p>
           </div>
           {os.diagnostico && (
             <div>
-              <span className={isDark ? "text-xs text-slate-500 block" : "text-xs text-zinc-500 font-medium block"}>Laudo Técnico:</span>
-              <p className={isDark ? "text-sm text-slate-300 mt-1" : "text-sm text-zinc-800 font-medium mt-1"}>{os.diagnostico}</p>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium block">Laudo Técnico:</span>
+              <p className="text-sm text-zinc-800 dark:text-zinc-300 font-medium mt-1">{os.diagnostico}</p>
             </div>
           )}
-          <div className={isDark ? "pt-4 border-t border-slate-800 flex items-center justify-between" : "pt-4 border-t border-zinc-100 flex items-center justify-between"}>
-            <div className="flex items-center gap-2 text-xs text-slate-400">
+          <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span className={isDark ? "text-slate-400" : "text-zinc-600 font-medium"}>Garantia de {os.garantiaDias} dias inclusa</span>
+              <span className="text-zinc-600 dark:text-zinc-400 font-medium">Garantia de {os.garantiaDias} dias inclusa</span>
             </div>
             <div className="text-right">
-              <span className={isDark ? "text-xs text-slate-500 block" : "text-xs text-zinc-500 font-medium block"}>Valor Total:</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium block">Valor Total:</span>
               <span className="text-xl font-bold text-emerald-500">
                 R$ {Number(os.valorTotal).toFixed(2)}
               </span>
@@ -408,23 +383,23 @@ export default function DetalheOrdemServicoPage({
         </div>
 
         {/* Audit Trail / Histórico de Mudanças */}
-        <div className={isDark ? "bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4" : "bg-white border border-zinc-200/90 rounded-2xl p-6 space-y-4 shadow-sm"}>
-          <h3 className={isDark ? "text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2" : "text-sm font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2"}>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl p-6 space-y-4 shadow-sm transition-colors duration-200">
+          <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-2">
             <Clock className="w-4 h-4 text-blue-500" />
             <span>Histórico de Atualizações (Audit Trail)</span>
           </h3>
-          <div className={isDark ? "space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-800" : "space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-zinc-200"}>
+          <div className="space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-zinc-200 dark:before:bg-zinc-800">
             {os.historicos.map((h) => (
               <div key={h.id} className="relative pl-8 flex items-start justify-between text-sm">
-                <div className={isDark ? "absolute left-1.5 top-1 w-4 h-4 rounded-full bg-blue-600 border-2 border-slate-900" : "absolute left-1.5 top-1 w-4 h-4 rounded-full bg-blue-600 border-2 border-white"} />
+                <div className="absolute left-1.5 top-1 w-4 h-4 rounded-full bg-blue-600 border-2 border-white dark:border-zinc-900" />
                 <div>
-                  <span className={isDark ? "font-semibold text-white block" : "font-bold text-zinc-900 block"}>Status alterado para {h.statusNovo}</span>
-                  {h.observacao && <span className={isDark ? "text-xs text-slate-400 block mt-0.5" : "text-xs text-zinc-600 block mt-0.5"}>{h.observacao}</span>}
-                  <span className={isDark ? "text-[11px] text-slate-500 block mt-1" : "text-[11px] text-zinc-400 block mt-1"}>
+                  <span className="font-bold text-zinc-900 dark:text-white block">Status alterado para {h.statusNovo}</span>
+                  {h.observacao && <span className="text-xs text-zinc-600 dark:text-zinc-400 block mt-0.5">{h.observacao}</span>}
+                  <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block mt-1">
                     Por {h.usuario?.nome || "Sistema"}
                   </span>
                 </div>
-                <span className={isDark ? "text-xs text-slate-500 shrink-0" : "text-xs text-zinc-500 shrink-0"}>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
                   {new Date(h.criadoEm).toLocaleString("pt-BR")}
                 </span>
               </div>
