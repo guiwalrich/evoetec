@@ -78,7 +78,13 @@ export async function GET(req: Request) {
       prisma.vendaItem.groupBy({
         by: ["produtoId"],
         where: {
-          ...dataFiltroVendaItem,
+          venda: {
+            empresaId: session.user.empresaId,
+            deletedAt: null,
+            ...(mesParam && anoParam && mesParam !== "todos"
+              ? { dataVenda: (dataFiltroVenda as any).dataVenda }
+              : {}),
+          },
         },
         _sum: { quantidade: true, valorTotal: true },
         orderBy: { _sum: { quantidade: "desc" } },

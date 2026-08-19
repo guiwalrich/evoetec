@@ -73,15 +73,30 @@ export default function RelatoriosPage() {
     carregarRelatorios()
   }, [mesAno])
 
-  if (loading && !dados) {
+  if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center text-zinc-400">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-900 mb-2" strokeWidth={1.5} />
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-zinc-400 gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-zinc-900" strokeWidth={1.5} />
+        <p className="text-xs text-zinc-500 font-mono">Carregando inteligência gerencial...</p>
       </div>
     )
   }
 
-  const faturamentoTotal = (dados?.vendas.totalFaturado || 0) + (dados?.ordensServico.totalFaturado || 0)
+  if (!dados) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-zinc-400 gap-3 text-center">
+        <p className="text-sm font-semibold text-zinc-700">Não foi possível carregar os relatórios.</p>
+        <button
+          onClick={() => setMesAno((prev) => prev ? `${prev}` : mesAtualStr)}
+          className="px-4 py-2 bg-black text-white text-xs font-semibold rounded-full hover:bg-zinc-800 transition-all cursor-pointer"
+        >
+          Tentar Novamente
+        </button>
+      </div>
+    )
+  }
+
+  const faturamentoTotal = (dados?.vendas?.totalFaturado || 0) + (dados?.ordensServico?.totalFaturado || 0)
 
   return (
     <>
@@ -241,7 +256,7 @@ export default function RelatoriosPage() {
       {/* ========================================================================= */}
       {/* 💻 INTERFACE INTERATIVA DO DASHBOARD (PRINT:HIDDEN)                        */}
       {/* ========================================================================= */}
-      <div className="space-y-8 print:hidden">
+      <div className="space-y-8 print:hidden page-fade-in">
         {/* Header com Filtro por Mês/Ano */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
