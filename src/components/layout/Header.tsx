@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { Menu, User, Bell, AlertTriangle, ClipboardList, DollarSign, Loader2, Check } from "lucide-react"
+import { Menu, User, Bell, AlertTriangle, ClipboardList, DollarSign, Loader2, Check, Sun, Moon } from "lucide-react"
 
 interface HeaderProps {
   setMobileOpen: (open: boolean) => void
@@ -24,7 +24,28 @@ export function Header({ setMobileOpen }: HeaderProps) {
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [notificacoes, setNotificacoes] = useState<NotificacaoItem[]>([])
   const [loadingNotifs, setLoadingNotifs] = useState(false)
+  const [theme, setTheme] = useState<"dark" | "light">("light")
   const popoverRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const saved = localStorage.getItem("app_theme") as "dark" | "light" | null
+    if (saved) {
+      setTheme(saved)
+      if (saved === "dark") document.documentElement.classList.add("dark")
+      else document.documentElement.classList.remove("dark")
+    }
+  }, [])
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark"
+    setTheme(nextTheme)
+    localStorage.setItem("app_theme", nextTheme)
+    if (nextTheme === "dark") {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  }
 
   const carregarNotificacoes = async () => {
     setLoadingNotifs(true)
@@ -89,8 +110,21 @@ export function Header({ setMobileOpen }: HeaderProps) {
         </div>
       </div>
 
-      {/* Perfil e Notificações */}
-      <div className="flex items-center gap-4 relative" ref={popoverRef}>
+      {/* Perfil, Tema e Notificações */}
+      <div className="flex items-center gap-2 sm:gap-3 relative" ref={popoverRef}>
+        {/* Botão de Alternância de Tema Global (Dark / Light) */}
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-full text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
+          title={theme === "dark" ? "Alternar para Modo Claro" : "Alternar para Modo Escuro"}
+        >
+          {theme === "dark" ? (
+            <Sun className="w-5 h-5 text-amber-400" strokeWidth={1.5} />
+          ) : (
+            <Moon className="w-5 h-5 text-zinc-700" strokeWidth={1.5} />
+          )}
+        </button>
+
         {/* Sininho Interativo com Contador Real */}
         <button
           onClick={() => {

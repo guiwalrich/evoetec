@@ -76,13 +76,19 @@ export default function DetalheOrdemServicoPage({
   const [tema, setTema] = useState<"dark" | "light">("light")
 
   useEffect(() => {
-    const temaSalvo = localStorage.getItem("os_tema_preferencia") as "dark" | "light" | null
+    const temaSalvo = (localStorage.getItem("app_theme") || localStorage.getItem("os_tema_preferencia")) as "dark" | "light" | null
     if (temaSalvo) setTema(temaSalvo)
   }, [])
 
   const alternarTema = (novoTema: "dark" | "light") => {
     setTema(novoTema)
+    localStorage.setItem("app_theme", novoTema)
     localStorage.setItem("os_tema_preferencia", novoTema)
+    if (novoTema === "dark") {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
   }
 
   const carregarOS = async () => {
