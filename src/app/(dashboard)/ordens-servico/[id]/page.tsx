@@ -295,27 +295,6 @@ export default function DetalheOrdemServicoPage({
             </div>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            {/* Botão de Alternância de Tema Dark / Light sem Emojis */}
-            <button
-              onClick={() => alternarTema(isDark ? "light" : "dark")}
-              className={isDark
-                ? "inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-4 py-2.5 rounded-xl transition-all text-xs cursor-pointer border border-slate-700 shadow-sm"
-                : "inline-flex items-center gap-2 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold px-4 py-2.5 rounded-xl transition-all text-xs cursor-pointer border border-zinc-300 shadow-sm"}
-              title="Alternar tema de visualização"
-            >
-              {isDark ? (
-                <>
-                  <Sun className="w-4 h-4 text-amber-400" strokeWidth={2} />
-                  <span>Modo Claro</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-4 h-4 text-indigo-600" strokeWidth={2} />
-                  <span>Modo Escuro</span>
-                </>
-              )}
-            </button>
-
             <button
               onClick={enviarNotificacaoWhatsApp}
               className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition-all text-sm cursor-pointer"
