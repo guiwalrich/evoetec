@@ -154,17 +154,17 @@ export default function RelatoriosPage() {
           <div className="grid grid-cols-3 gap-4 text-xs text-center">
             <div className="border-r border-zinc-300 pr-2">
               <span className="text-zinc-600 block">Faturamento em Vendas (PDV)</span>
-              <strong className="text-base font-black text-black">R$ {(dados?.vendas.totalFaturado || 0).toFixed(2)}</strong>
-              <span className="text-[10px] text-zinc-500 block">({dados?.vendas.quantidade || 0} vendas)</span>
+              <strong className="text-base font-black text-black">R$ {Number(dados?.vendas?.totalFaturado || 0).toFixed(2)}</strong>
+              <span className="text-[10px] text-zinc-500 block">({dados?.vendas?.quantidade || 0} vendas)</span>
             </div>
             <div className="border-r border-zinc-300 pr-2">
               <span className="text-zinc-600 block">Faturamento em Serviços (OS)</span>
-              <strong className="text-base font-black text-black">R$ {(dados?.ordensServico.totalFaturado || 0).toFixed(2)}</strong>
-              <span className="text-[10px] text-zinc-500 block">({dados?.ordensServico.quantidade || 0} ordens de serviço)</span>
+              <strong className="text-base font-black text-black">R$ {Number(dados?.ordensServico?.totalFaturado || 0).toFixed(2)}</strong>
+              <span className="text-[10px] text-zinc-500 block">({dados?.ordensServico?.quantidade || 0} ordens de serviço)</span>
             </div>
             <div>
               <span className="text-zinc-600 block font-semibold">Faturamento Bruto Consolidado</span>
-              <strong className="text-lg font-black text-emerald-800">R$ {faturamentoTotal.toFixed(2)}</strong>
+              <strong className="text-lg font-black text-emerald-800">R$ {Number(faturamentoTotal || 0).toFixed(2)}</strong>
               <span className="text-[10px] text-zinc-500 block">(Receita Total Líquida)</span>
             </div>
           </div>
@@ -177,7 +177,7 @@ export default function RelatoriosPage() {
             <span className="font-extrabold text-xs uppercase tracking-wider text-black block border-b border-zinc-200 pb-1">
               2. PRODUTOS MAIS VENDIDOS
             </span>
-            {dados?.topProdutos.length === 0 ? (
+            {!dados?.topProdutos || dados.topProdutos.length === 0 ? (
               <p className="text-zinc-500 text-[11px]">Nenhum produto registrado no período.</p>
             ) : (
               <table className="w-full text-left border-collapse">
@@ -189,11 +189,11 @@ export default function RelatoriosPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 text-[11px]">
-                  {dados?.topProdutos.map((p, idx) => (
+                  {dados.topProdutos.map((p, idx) => (
                     <tr key={idx}>
                       <td className="py-1.5 font-medium">{p.nome}</td>
                       <td className="py-1.5 text-center font-mono">{p.quantidadeTotal}</td>
-                      <td className="py-1.5 text-right font-mono font-bold">R$ {p.valorTotal.toFixed(2)}</td>
+                      <td className="py-1.5 text-right font-mono font-bold">R$ {Number(p.valorTotal || 0).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -206,7 +206,7 @@ export default function RelatoriosPage() {
             <span className="font-extrabold text-xs uppercase tracking-wider text-black block border-b border-zinc-200 pb-1">
               3. ESTATÍSTICAS DE OS POR STATUS
             </span>
-            {dados?.ordensServico.porStatus.length === 0 ? (
+            {!dados?.ordensServico?.porStatus || dados.ordensServico.porStatus.length === 0 ? (
               <p className="text-zinc-500 text-[11px]">Nenhuma Ordem de Serviço cadastrada.</p>
             ) : (
               <table className="w-full text-left border-collapse">
@@ -217,7 +217,7 @@ export default function RelatoriosPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 text-[11px]">
-                  {dados?.ordensServico.porStatus.map((item, idx) => (
+                  {dados.ordensServico.porStatus.map((item, idx) => (
                     <tr key={idx}>
                       <td className="py-1.5 font-medium uppercase">{item.status}</td>
                       <td className="py-1.5 text-right font-mono font-bold">{item._count}</td>
@@ -364,10 +364,10 @@ export default function RelatoriosPage() {
               <span>Top Produtos Mais Vendidos</span>
             </h3>
             <div className="space-y-3">
-              {dados?.topProdutos.length === 0 ? (
+              {!dados?.topProdutos || dados.topProdutos.length === 0 ? (
                 <p className="text-xs text-zinc-400 py-4 text-center">Nenhum produto registrado no período.</p>
               ) : (
-                dados?.topProdutos.map((prod, idx) => (
+                dados.topProdutos.map((prod, idx) => (
                   <div
                     key={idx}
                     className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-100 text-xs"
@@ -379,7 +379,7 @@ export default function RelatoriosPage() {
                       </span>
                     </div>
                     <span className="font-extrabold text-zinc-900 font-mono">
-                      R$ {prod.valorTotal.toFixed(2)}
+                      R$ {Number(prod.valorTotal || 0).toFixed(2)}
                     </span>
                   </div>
                 ))
@@ -394,10 +394,10 @@ export default function RelatoriosPage() {
               <span>Estatísticas de OS por Status</span>
             </h3>
             <div className="space-y-3">
-              {dados?.ordensServico.porStatus.length === 0 ? (
+              {!dados?.ordensServico?.porStatus || dados.ordensServico.porStatus.length === 0 ? (
                 <p className="text-xs text-zinc-400 py-4 text-center">Nenhuma OS registrada no período.</p>
               ) : (
-                dados?.ordensServico.porStatus.map((item, idx) => (
+                dados.ordensServico.porStatus.map((item, idx) => (
                   <div
                     key={idx}
                     className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-100 text-xs"
@@ -420,13 +420,13 @@ export default function RelatoriosPage() {
             <span>Alerta de Estoque Crítico</span>
           </h3>
 
-          {dados?.estoqueCritico.length === 0 ? (
+          {!dados?.estoqueCritico || dados.estoqueCritico.length === 0 ? (
             <p className="text-xs text-zinc-500 py-2">
               Nenhum produto com estoque abaixo do limite mínimo. Excelente gestão!
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {dados?.estoqueCritico.map((prod) => (
+              {dados.estoqueCritico.map((prod) => (
                 <div
                   key={prod.id}
                   className="p-4 rounded-2xl bg-red-50/50 border border-red-100 flex items-center justify-between text-xs"

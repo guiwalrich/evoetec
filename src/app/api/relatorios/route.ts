@@ -78,7 +78,7 @@ export async function GET(req: Request) {
       prisma.vendaItem.groupBy({
         by: ["produtoId"],
         where: {
-          produtoId: { not: undefined },
+          produtoId: { not: null as any },
           venda: {
             empresaId: session.user.empresaId,
             deletedAt: null,
@@ -93,21 +93,28 @@ export async function GET(req: Request) {
       }),
     ])
 
-    // Buscar nomes dos top produtos
-    const topProdutosIds = topProdutos.map((p) => p.produtoId)
-    const detalhesProdutos = await prisma.produto.findMany({
-      where: { id: { in: topProdutosIds } },
-      select: { id: true, nome: true },
-    })
+    // Buscar nomes dos top produtos filtrando nulos
+    const topProdutosIds = topProdutos
+      .map((p) => p.produtoId)
+      .filter((id): id is string => Boolean(id))
 
-    const topProdutosFormatados = topProdutos.map((item) => {
-      const prod = detalhesProdutos.find((d) => d.id === item.produtoId)
-      return {
-        nome: prod?.nome || "Produto Desconhecido",
-        quantidadeTotal: item._sum?.quantidade || 0,
-        valorTotal: item._sum?.valorTotal || 0,
-      }
-    })
+    const detalhesProdutos = topProdutosIds.length > 0
+      ? await prisma.produto.findMany({
+          where: { id: { in: topProdutosIds } },
+          select: { id: true, nome: true },
+        })
+      : []
+
+    const topProdutosFormatados = topProdutos
+      .filter((item) => Boolean(item.produtoId))
+      .map((item) => {
+        const prod = detalhesProdutos.find((d) => d.id === item.produtoId)
+        return {
+          nome: prod?.nome || "Produto Desconhecido",
+          quantidadeTotal: Number(item._sum?.quantidade || 0),
+          valorTotal: Number(item._sum?.valorTotal || 0),
+        }
+      })
 
     // Buscar dados da empresa para o cabeçalho oficial do relatório
     const empresaInfo = await prisma.empresa.findUnique({
