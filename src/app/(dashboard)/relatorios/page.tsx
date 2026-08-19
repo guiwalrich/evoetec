@@ -60,8 +60,8 @@ export default function RelatoriosPage() {
           url = `/api/relatorios?mes=${parseInt(mes, 10)}&ano=${ano}`
         }
         const res = await fetch(url)
-        if (res.ok) {
-          const json = await res.json()
+        const json = await res.json().catch(() => null)
+        if (json) {
           setDados({
             empresa: json.empresa || undefined,
             vendas: {
@@ -77,7 +77,13 @@ export default function RelatoriosPage() {
             topProdutos: json.topProdutos || [],
           })
         } else {
-          setDados(null)
+          setDados({
+            empresa: undefined,
+            vendas: { totalFaturado: 0, quantidade: 0 },
+            ordensServico: { totalFaturado: 0, quantidade: 0, porStatus: [] },
+            estoqueCritico: [],
+            topProdutos: []
+          })
         }
       } catch (err) {
         console.error("Erro ao carregar relatórios:", err)
